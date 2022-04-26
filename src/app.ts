@@ -3,6 +3,7 @@ import {Telegraf} from 'telegraf';
 import {translationsRU} from './i18n/ru';
 import {Config} from './models/config.model';
 import {HelpCommandService} from './services/help-command/help-command.service';
+import {JokeCommandService} from './services/joke-command/joke-command.service';
 import {LoggerService} from './services/logger/logger.service';
 import {BaseService} from './services/common.service';
 import {provideConfig} from './services/config/config.provider';
@@ -30,6 +31,7 @@ export class App {
 
     // Register all services
     this.services.push(new HelpCommandService(this.logger, this.t, this.config, this.bot));
+    this.services.push(new JokeCommandService(this.logger, this.t, this.config, this.bot));
   }
 
   async start(): Promise<void> {
