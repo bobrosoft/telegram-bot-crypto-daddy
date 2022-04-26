@@ -1,0 +1,34 @@
+# OS generated files #
+.DS_Store
+ehthumbs.db
+[I]con?
+Thumbs.db
+
+# Node Files #
+/node_modules/
+npm-debug.log
+/npm-debug.log.*
+
+# Coverage #
+/coverage/
+
+# Typing #
+/src/typings/tsd/
+/typings/
+/tsd_typings/
+
+# Dist #
+/dist
+/tmp
+
+# Doc #
+/doc/
+
+# IDE #
+.idea/
+*.swp
+
+# Custom #
+/stats.json
+.tool-versions
+.env*

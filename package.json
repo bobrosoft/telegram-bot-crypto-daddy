@@ -1,0 +1,36 @@
+{
+  "name": "telegram-bot-crypto-daddy",
+  "version": "1.0.0",
+  "description": "telegram-bot-crypto-daddy",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "lint": "eslint src/**/*.ts",
+    "server:staging": "npm run build && node dist/index.js",
+    "server:production": "export ENVIRONMENT=production && npm run build && node dist/index.js"
+  },
+  "author": "bobrosoft",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "i18next": "^21.6.4",
+    "node-fetch": "^2.6.6",
+    "telegraf": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.5",
+    "@types/node-fetch": "^2.5.12",
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/parser": "^5.8.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "tsc-watch": "^4.6.0",
+    "typescript": "^4.5.4"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  }
+}

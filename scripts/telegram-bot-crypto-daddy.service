@@ -1,0 +1,14 @@
+[Unit]
+Description=telegram-bot-crypto-daddy
+
+[Service]
+ExecStart=/bin/bash -c "source ~/.bash_profile; cd /var/www/telegram-bot-crypto-daddy; npm run server:production"
+Restart=always
+User=opc
+Group=opc
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/telegram-bot-crypto-daddy
+
+[Install]
+WantedBy=multi-user.target
