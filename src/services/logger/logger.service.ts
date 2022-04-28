@@ -1,3 +1,6 @@
+import {autoInjectable} from 'tsyringe';
+
+@autoInjectable()
 export class LoggerService {
   log(service: string, message: string) {
     console.log(

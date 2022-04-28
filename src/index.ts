@@ -1,3 +1,4 @@
+import './polyfills';
 import {App} from './app';
 
 // Launch the app

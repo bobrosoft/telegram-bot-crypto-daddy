@@ -16,7 +16,9 @@
     "dotenv": "^10.0.0",
     "i18next": "^21.6.4",
     "node-fetch": "^2.6.6",
-    "telegraf": "^4.5.2"
+    "reflect-metadata": "^0.1.13",
+    "telegraf": "^4.5.2",
+    "tsyringe": "^4.6.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.5",

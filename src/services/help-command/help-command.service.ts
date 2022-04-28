@@ -1,17 +1,18 @@
 import {TFunction} from 'i18next';
 import {Telegraf, Context} from 'telegraf';
+import {autoInjectable, inject} from 'tsyringe';
 import {Config} from '../../models/config.model';
 import {BaseService} from '../common.service';
 import {LoggerService} from '../logger/logger.service';
 
+@autoInjectable()
 export class HelpCommandService extends BaseService {
   protected name = 'HelpCommandService';
 
   constructor(
-    //
     protected logger: LoggerService,
-    protected t: TFunction,
-    protected config: Config,
+    @inject('TFunction') protected t: TFunction,
+    @inject('Config') protected config: Config,
     protected bot: Telegraf,
   ) {
     super(logger);
@@ -19,11 +20,11 @@ export class HelpCommandService extends BaseService {
   }
 
   async start(): Promise<void> {
-    //
+    // noop
   }
 
   async stop(): Promise<void> {
-    //
+    // noop
   }
 
   protected async onHelp(ctx: Context) {

@@ -1,5 +1,6 @@
-import i18next, {TFunction} from 'i18next';
+import i18next from 'i18next';
 import {Telegraf} from 'telegraf';
+import {container} from 'tsyringe';
 import {translationsRU} from './i18n/ru';
 import {Config} from './models/config.model';
 import {HelpCommandService} from './services/help-command/help-command.service';
@@ -9,29 +10,37 @@ import {BaseService} from './services/common.service';
 import {provideConfig} from './services/config/config.provider';
 
 export class App {
-  protected t: TFunction; // i18n translation function
-  protected bot: Telegraf;
   protected services: BaseService[] = [];
-  protected logger: LoggerService;
+
+  protected get bot(): Telegraf {
+    return container.resolve(Telegraf);
+  }
+
+  protected get logger(): LoggerService {
+    return container.resolve(LoggerService);
+  }
 
   constructor(
     //
     protected config: Config = provideConfig(process.env.ENVIRONMENT as any),
   ) {
+    // Register config
+    container.registerInstance('Config', config);
+
     // Init i18n
     i18next.init({lng: 'ru', returnObjects: true}).then();
     i18next.addResourceBundle('ru', 'translation', translationsRU, true, true);
-    this.t = i18next.t;
+    container.registerInstance('TFunction', i18next.t);
 
     // Create bot
-    this.bot = new Telegraf(config.botToken);
+    container.registerInstance(Telegraf, new Telegraf(config.botToken));
 
     // Create logger
-    this.logger = new LoggerService();
+    container.registerInstance(LoggerService, new LoggerService());
 
     // Register all services
-    this.services.push(new HelpCommandService(this.logger, this.t, this.config, this.bot));
-    this.services.push(new JokeCommandService(this.logger, this.t, this.config, this.bot));
+    this.services.push(container.resolve(HelpCommandService));
+    this.services.push(container.resolve(JokeCommandService));
   }
 
   async start(): Promise<void> {
