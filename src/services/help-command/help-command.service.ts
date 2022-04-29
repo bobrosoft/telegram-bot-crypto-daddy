@@ -1,6 +1,7 @@
 import {TFunction} from 'i18next';
 import {Telegraf, Context} from 'telegraf';
 import {autoInjectable, inject} from 'tsyringe';
+import {ConfigToken, TFunctionToken} from '../../misc/injection-tokens';
 import {Config} from '../../models/config.model';
 import {BaseService} from '../common.service';
 import {LoggerService} from '../logger/logger.service';
@@ -11,8 +12,8 @@ export class HelpCommandService extends BaseService {
 
   constructor(
     protected logger: LoggerService,
-    @inject('TFunction') protected t: TFunction,
-    @inject('Config') protected config: Config,
+    @inject(TFunctionToken) protected t: TFunction,
+    @inject(ConfigToken) protected config: Config,
     protected bot: Telegraf,
   ) {
     super(logger);

@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
 import {translationsRU} from './i18n/ru';
+import {ConfigToken, TFunctionToken} from './misc/injection-tokens';
 import {Config} from './models/config.model';
 import {HelpCommandService} from './services/help-command/help-command.service';
 import {JokeCommandService} from './services/joke-command/joke-command.service';
@@ -25,12 +26,12 @@ export class App {
     protected config: Config = provideConfig(process.env.ENVIRONMENT as any),
   ) {
     // Register config
-    container.registerInstance('Config', config);
+    container.registerInstance(ConfigToken, config);
 
     // Init i18n
     i18next.init({lng: 'ru', returnObjects: true}).then();
     i18next.addResourceBundle('ru', 'translation', translationsRU, true, true);
-    container.registerInstance('TFunction', i18next.t);
+    container.registerInstance(TFunctionToken, i18next.t);
 
     // Create bot
     container.registerInstance(Telegraf, new Telegraf(config.botToken));
