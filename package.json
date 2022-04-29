@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "test": "jest .*\\\\.spec\\\\.ts",
+    "test": "jest",
     "test:watch": "npm run test -- --watch",
     "lint": "eslint src/**/*.ts",
     "server:staging": "npm run build && node dist/index.js",

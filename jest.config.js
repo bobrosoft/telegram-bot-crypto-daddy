@@ -3,4 +3,5 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFiles: ['./src/polyfills.ts'],
+  testMatch: ['**/src/**/*.spec.ts'],
 };

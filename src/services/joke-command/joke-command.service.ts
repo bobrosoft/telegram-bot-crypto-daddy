@@ -1,25 +1,22 @@
 import {TFunction} from 'i18next';
 import {Telegraf, Context} from 'telegraf';
 import {autoInjectable, inject} from 'tsyringe';
-import {ConfigToken, TFunctionToken} from '../../misc/injection-tokens';
-import {Config} from '../../models/config.model';
-import {BaseService} from '../common.service';
+import {TFunctionToken} from '../../misc/injection-tokens';
+import {BaseCommandService} from '../base-command.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
-export class JokeCommandService extends BaseService {
+export class JokeCommandService extends BaseCommandService {
   protected name = 'JokeCommandService';
 
   constructor(
     protected logger: LoggerService,
     @inject(TFunctionToken) protected t: TFunction,
-    @inject(ConfigToken) protected config: Config,
     protected bot: Telegraf,
   ) {
-    super(logger);
+    super(logger, bot);
 
-    this.bot.command('joke', this.onJoke.bind(this));
-    this.bot.command('шутка', this.onJoke.bind(this));
+    this.listenForCommand(['joke', 'шутка'], this.onJokeCommand.bind(this));
   }
 
   async start(): Promise<void> {
@@ -37,7 +34,7 @@ export class JokeCommandService extends BaseService {
     await ctx.replyWithHTML(joke);
   }
 
-  protected async onJoke(ctx: Context) {
+  protected async onJokeCommand(ctx: Context) {
     await this.tellJoke(ctx);
   }
 }

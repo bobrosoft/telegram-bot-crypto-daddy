@@ -23,7 +23,7 @@ describe('JokeCommandService', () => {
     container.resolve(JokeCommandService);
 
     jest.spyOn(ctxMock, 'replyWithHTML');
-    await telegrafMock.triggerCommand('joke', 'test');
+    await telegrafMock.triggerHears('/joke');
 
     expect(ctxMock.replyWithHTML).toBeCalledWith('joke text');
   });

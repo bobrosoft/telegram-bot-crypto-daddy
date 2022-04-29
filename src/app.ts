@@ -7,7 +7,7 @@ import {Config} from './models/config.model';
 import {HelpCommandService} from './services/help-command/help-command.service';
 import {JokeCommandService} from './services/joke-command/joke-command.service';
 import {LoggerService} from './services/logger/logger.service';
-import {BaseService} from './services/common.service';
+import {BaseService} from './services/base.service';
 import {provideConfig} from './services/config/config.provider';
 
 export class App {

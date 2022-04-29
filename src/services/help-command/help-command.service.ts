@@ -3,7 +3,7 @@ import {Telegraf, Context} from 'telegraf';
 import {autoInjectable, inject} from 'tsyringe';
 import {ConfigToken, TFunctionToken} from '../../misc/injection-tokens';
 import {Config} from '../../models/config.model';
-import {BaseService} from '../common.service';
+import {BaseService} from '../base.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
