@@ -1,9 +1,11 @@
 import i18next from 'i18next';
+import fetch from 'node-fetch';
 import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
 import {translationsRU} from './i18n/ru';
-import {ConfigToken, TFunctionToken} from './misc/injection-tokens';
+import {ConfigToken, FetchToken, TFunctionToken} from './misc/injection-tokens';
 import {Config} from './models/config.model';
+import {HashrateCommandService} from './services/hashrate-command/hashrate-command.service';
 import {HelpCommandService} from './services/help-command/help-command.service';
 import {JokeCommandService} from './services/joke-command/joke-command.service';
 import {LoggerService} from './services/logger/logger.service';
@@ -39,16 +41,20 @@ export class App {
     // Create logger
     container.registerInstance(LoggerService, new LoggerService());
 
+    // Register fetch
+    container.registerInstance(FetchToken, fetch);
+
     // Register all services
     this.services.push(container.resolve(HelpCommandService));
     this.services.push(container.resolve(JokeCommandService));
+    this.services.push(container.resolve(HashrateCommandService));
   }
 
   async start(): Promise<void> {
     await this.bot.launch();
-    await Promise.all(this.services.map(s => s.start()));
-
     this.logger.log('App', `Starting bot @${this.bot.botInfo?.username}`);
+    
+    await Promise.all(this.services.map(s => s.start()));
   }
 
   async stop(reason?: string) {

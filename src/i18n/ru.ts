@@ -1,4 +1,16 @@
 export const translationsRU = {
+  HashrateCommandService: {
+    help: 'А название карты указать? Или мне всё за тебя додумывать как обычно?',
+    resultIntro: 'Вот смотри, что папка в газетке нашел:\n\n',
+    gpuInfo: `
+<b>{{title}}</b> 🎮
+ • Hashrate: <b>{{hashrate}}</b> (ETH) | {{power}} | <a href="{{href}}">OC Settings</a>
+ • Profit: {{profit}}/day (ROI: {{roi}})
+    `,
+    gpuInfoSeparator: '\n\n',
+    gpuNotFound: 'Это что за хрень? Не знаю такой. Чего бы умного спросил лучше, а?',
+  },
+
   HelpCommandService: {
     helpMsg: `
 Здесь должна быть помощь по боту.
