@@ -1,23 +1,23 @@
 import {TFunction} from 'i18next';
 import {Telegraf, Context} from 'telegraf';
 import {autoInjectable, inject} from 'tsyringe';
-import {ConfigToken, TFunctionToken} from '../../misc/injection-tokens';
-import {Config} from '../../models/config.model';
-import {BaseService} from '../base.service';
+import {TFunctionToken} from '../../misc/injection-tokens';
+import {BaseCommandService} from '../base-command.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
-export class HelpCommandService extends BaseService {
+export class HelpCommandService extends BaseCommandService {
   protected name = 'HelpCommandService';
 
   constructor(
     protected logger: LoggerService,
     @inject(TFunctionToken) protected t: TFunction,
-    @inject(ConfigToken) protected config: Config,
     protected bot: Telegraf,
   ) {
-    super(logger);
-    this.bot.command('help', this.onHelp.bind(this));
+    super(logger, bot);
+
+    bot.start(ctx => ctx.replyWithHTML(this.t(`${this.name}.introMsg`)));
+    this.listenForCommand(['help', 'помощь', 'справка'], this.onHelp.bind(this));
   }
 
   async start(): Promise<void> {
@@ -29,8 +29,8 @@ export class HelpCommandService extends BaseService {
   }
 
   protected async onHelp(ctx: Context) {
-    this.log(`called in chat: ${(ctx.chat as any)?.title || (ctx.chat as any)?.username} (${ctx.chat?.id})`);
+    this.log(`Сalled in chat: ${(ctx.chat as any)?.title || (ctx.chat as any)?.username} (${ctx.chat?.id})`);
 
-    await ctx.replyWithHTML(this.t('HelpCommandService.helpMsg', {link: 'https://google.com'}));
+    await ctx.replyWithHTML(this.t('HelpCommandService.helpMsg'));
   }
 }
