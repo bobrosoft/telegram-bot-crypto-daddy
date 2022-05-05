@@ -13,6 +13,6 @@ export abstract class BaseCommandService extends BaseService {
   }
 
   protected listenForCommand(variations: string[], callback: (ctx: ContextWithMatch) => Promise<void>) {
-    this.bot.hears(new RegExp(`^\/(?<command>${variations.join('|')})\\s*(?<params>[^]*)$`), callback);
+    this.bot.hears(new RegExp(`^\/(?<command>${variations.join('|')})\\s+(?<params>[^]*)$`), callback);
   }
 }
