@@ -95,7 +95,7 @@ export class HashrateCommandService extends BaseCommandService {
         const result: GpuInfoList = Array.from(match2, m => {
           return {
             ...m.groups,
-            href: `https://www.hashrate.no${m.groups?.href}`,
+            href: `https://www.hashrate.no${m.groups?.href}#:~:text=OVERCLOCKS`,
             searchStr: (m.groups?.title || '').toLocaleLowerCase().replace(/\s/g, ''),
           } as any;
         });
