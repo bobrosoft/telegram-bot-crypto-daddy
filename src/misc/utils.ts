@@ -6,4 +6,8 @@ export class Utils {
       }, ms);
     });
   }
+
+  static normalizePrice(value: string | number | undefined): string {
+    return Number(value).toFixed(2);
+  }
 }

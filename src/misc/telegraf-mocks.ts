@@ -15,6 +15,8 @@ export class TelegrafMock {
 
   constructor(protected ctxMock: TelegrafContextMock) {}
 
+  start(callback: (ctx: Context) => Promise<void>) {}
+
   command(command: string, callback: (ctx: Context) => Promise<void>) {
     this.commandListeners.push({command, callback});
   }

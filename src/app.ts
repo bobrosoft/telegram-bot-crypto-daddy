@@ -11,6 +11,7 @@ import {JokeCommandService} from './services/joke-command/joke-command.service';
 import {LoggerService} from './services/logger/logger.service';
 import {BaseService} from './services/base.service';
 import {provideConfig} from './services/config/config.provider';
+import {RateCommandService} from './services/rate-command/rate-command.service';
 
 export class App {
   protected services: BaseService[] = [];
@@ -48,12 +49,13 @@ export class App {
     this.services.push(container.resolve(HelpCommandService));
     this.services.push(container.resolve(JokeCommandService));
     this.services.push(container.resolve(HashrateCommandService));
+    this.services.push(container.resolve(RateCommandService));
   }
 
   async start(): Promise<void> {
     await this.bot.launch();
     this.logger.log('App', `Starting bot @${this.bot.botInfo?.username}`);
-    
+
     await Promise.all(this.services.map(s => s.start()));
   }
 

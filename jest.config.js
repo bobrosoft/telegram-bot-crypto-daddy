@@ -4,4 +4,5 @@ module.exports = {
   testEnvironment: 'node',
   setupFiles: ['./src/polyfills.ts'],
   testMatch: ['**/src/**/*.spec.ts'],
+  verbose: true,
 };
