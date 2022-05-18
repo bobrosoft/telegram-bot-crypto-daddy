@@ -15,6 +15,7 @@ export const translationsRU = {
     introMsg: `Всем здарова! Батя много чего видел и знает, обращайтесь.`,
     helpMsg: `
 А ты не мелкий ли, бл*ть, чтобы Батей командовать? Но да ладно, смотри, что Батя умеет:
+
 <b>/help</b> — помощь по командам;
 <b>/hashrate 1660ti</b> (/hash /хеш) — показывает хешрейт, настройки и информацию по карте;
 <b>/rate</b> (/курс) — курс валют
@@ -39,17 +40,20 @@ export const translationsRU = {
   },
 
   RateCommandService: {
+    priceDirectionUp: '▲',
+    priceDirectionDown: '🔻',
     rateInfo: `
 Вот что по телику давеча сказали:
 
 <b>USD/RUB</b> 💰
- • ЦБ/Биржа: <b>{{rubOfficial}} ₽</b>
- • Aliexpress: <b>{{rubAliexpress}} ₽</b>
- • USDT/RUB: <b>{{rubBestchange}} ₽</b> (Bestchange)
+ • ЦБ/Биржа: <b>{{rub.official}} ₽</b>
+ • Aliexpress: <b>{{rub.aliexpress}} ₽</b>
+ • USDT/RUB: <b>{{rub.bestchange}} ₽</b> (Bestchange)
 
-<b>ETH</b>: <b>\${{ethUsd}}</b>
-<b>ETC</b>: <b>\${{etcUsd}}</b>
-<b>ERG</b>: <b>\${{ergUsd}}</b>
+<b>BTC</b>: <b>\${{btc.price}}</b> {{btc.priceDirection}}
+<b>ETH</b>: <b>\${{eth.price}}</b> {{eth.priceDirection}}
+<b>ETC</b>: <b>\${{etc.price}}</b> {{etc.priceDirection}}
+<b>ERG</b>: <b>\${{erg.price}}</b> {{erg.priceDirection}}
     `,
   },
 };

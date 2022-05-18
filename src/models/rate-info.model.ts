@@ -1,9 +1,10 @@
+import {CryptoTicker} from './crypto-ticker.model';
+import {RubTicker} from './rub-ticker.model';
+
 export interface RateInfo {
-  rubOfficial: string;
-  rubAliexpress: string;
-  rubBestchange: string;
-  btcUsd: string;
-  ethUsd: string;
-  etcUsd: string;
-  ergUsd: string;
+  rub: RubTicker;
+  btc: CryptoTicker;
+  eth: CryptoTicker;
+  etc: CryptoTicker;
+  erg: CryptoTicker;
 }

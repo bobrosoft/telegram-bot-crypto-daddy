@@ -6,6 +6,7 @@ import {autoInjectable, inject} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {Utils} from '../../misc/utils';
 import {ContextWithMatch} from '../../models/context-with-match.model';
+import {CryptoTicker} from '../../models/crypto-ticker.model';
 import {Fetch} from '../../models/fetch.model';
 import {RateInfo} from '../../models/rate-info.model';
 import {BaseCommandService} from '../base-command.service';
@@ -34,7 +35,7 @@ export class RateCommandService extends BaseCommandService {
     // Setup periodic info update
     this.rateInfoUpdateTimer = setInterval(() => {
       this.getRateInfo(false).then();
-    }, 3 * 60 * 60 * 1000);
+    }, 2 * 60 * 60 * 1000);
   }
 
   async stop(): Promise<void> {
@@ -59,39 +60,53 @@ export class RateCommandService extends BaseCommandService {
     this.rateInfo = new Promise<RateInfo>(async (resolve, reject) => {
       try {
         let result: RateInfo = {
-          rubOfficial: '???',
-          rubAliexpress: '???',
-          rubBestchange: '???',
-          btcUsd: '???',
-          ethUsd: '???',
-          etcUsd: '???',
-          ergUsd: '???',
+          rub: {
+            official: '???',
+            aliexpress: '???',
+            bestchange: '???',
+          },
+          btc: {symbol: 'BTC', price: '???'},
+          eth: {symbol: 'ETH', price: '???'},
+          etc: {symbol: 'ETC', price: '???'},
+          erg: {symbol: 'ERG', price: '???'},
         };
 
         this.log('Getting rate info from remotes: getBestchangeInfo...');
-        result = {
-          ...result,
-          ...(await this.getBestchangeInfo()),
-        };
-        this.log('Success');
+        try {
+          const info = await this.getBestchangeInfo();
+          result.rub.official = info.rubOfficial;
+          result.rub.bestchange = info.rubBestchange;
+
+          this.log('Success');
+        } catch (e) {
+          this.logFetchError(e as any);
+        }
 
         this.log('Getting rate info from remotes: getAliInfo...');
-        result = {
-          ...result,
-          ...(await this.getAliInfo()),
-        };
-        this.log('Success');
+        try {
+          const info = await this.getAliInfo();
+          result.rub.aliexpress = info.rubAliexpress;
 
-        this.log('Getting rate info from remotes: get2CryptocalcInfo...');
-        result = {
-          ...result,
-          ...(await this.get2CryptocalcInfo()),
-        };
-        this.log('Success');
+          this.log('Success');
+        } catch (e) {
+          this.logFetchError(e as any);
+        }
+
+        this.log('Getting rate info from remotes: getCoinGeckoInfo...');
+        try {
+          result = {
+            ...result,
+            ...(await this.getCoinGeckoInfo()),
+          };
+
+          this.log('Success');
+        } catch (e) {
+          this.logFetchError(e as any);
+        }
 
         resolve(result);
       } catch (e) {
-        this.log(`Error: status ${(e as FetchError).code}. ` + (e as FetchError).message);
+        this.logFetchError(e as any);
 
         this.rateInfo = undefined;
         reject(e);
@@ -178,6 +193,40 @@ export class RateCommandService extends BaseCommandService {
       etcUsd: Utils.normalizePrice(etcUsd),
       ergUsd: Utils.normalizePrice(ergUsd),
     };
+  }
+
+  protected async getCoinGeckoInfo(): Promise<{
+    btc: CryptoTicker;
+    eth: CryptoTicker;
+    etc: CryptoTicker;
+    erg: CryptoTicker;
+  }> {
+    const findSymbol = (symbol: string): CryptoTicker => {
+      const item = data.find((c: any) => c.symbol === symbol);
+      return {
+        symbol: item?.symbol.toUpperCase(),
+        price: Utils.normalizePrice(item?.current_price),
+        priceDirection:
+          item?.price_change_24h > 0
+            ? this.t(`${this.name}.priceDirectionUp`)
+            : this.t(`${this.name}.priceDirectionDown`),
+      };
+    };
+
+    const data = await this.fetch(
+      'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,ethereum-classic,ergo',
+    ).then(r => r.json());
+
+    return {
+      btc: findSymbol('btc'),
+      eth: findSymbol('eth'),
+      etc: findSymbol('etc'),
+      erg: findSymbol('erg'),
+    };
+  }
+
+  protected logFetchError(e: FetchError) {
+    this.log(`Error: status ${(e as FetchError).code}. ` + (e as FetchError).message);
   }
 
   protected async onRateCommand(ctx: ContextWithMatch) {

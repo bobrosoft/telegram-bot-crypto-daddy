@@ -10,7 +10,7 @@ import {RateCommandService} from './rate-command.service';
 
 const tinfoffUsdFetchResult = fs.readFileSync('src/services/rate-command/spec-tinkoff-usdt.html');
 const aliFetchResult = fs.readFileSync('src/services/rate-command/spec-ali.html');
-const cryptoFetchResult = fs.readFileSync('src/services/rate-command/spec-2cryptocalc.html');
+const cryptoFetchResult = fs.readFileSync('src/services/rate-command/spec-coingecko.json');
 
 describe('RateCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -22,7 +22,7 @@ describe('RateCommandService', () => {
     container.registerInstance(TFunctionToken, (key, options?: any) => {
       switch (key) {
         case 'RateCommandService.rateInfo':
-          return `${options?.rubOfficial} ${options?.rubAliexpress} ${options?.rubBestchange} ${options?.ethUsd} ${options?.etcUsd} ${options?.ergUsd}`;
+          return `${options?.rub.official} ${options?.rub.aliexpress} ${options?.rub.bestchange} ${options?.btc.price} ${options?.eth.price} ${options?.etc.price} ${options?.erg.price}`;
 
         default:
           return '';
@@ -40,7 +40,7 @@ describe('RateCommandService', () => {
         return Promise.resolve(new Response(tinfoffUsdFetchResult));
       } else if (url.match(/helpix/)) {
         return Promise.resolve(new Response(aliFetchResult));
-      } else if (url.match(/cryptocalc/)) {
+      } else if (url.match(/coingecko/)) {
         return Promise.resolve(new Response(cryptoFetchResult));
       }
     }) as any);
@@ -52,6 +52,9 @@ describe('RateCommandService', () => {
     jest.spyOn(ctxMock, 'replyWithHTML');
     await telegrafMock.triggerHears('/rate');
 
-    expect(ctxMock.replyWithHTML).toBeCalledWith('64.55 70.20 75.77 2059.03 21.24 2.50');
+    expect(ctxMock.replyWithHTML).toBeCalledWith('64.55 70.20 75.77 30473.00 2078.64 21.55 2.41', {
+      disable_notification: true,
+      disable_web_page_preview: true,
+    });
   });
 });
