@@ -34,7 +34,7 @@ export class RateCommandService extends BaseCommandService {
     // Setup periodic info update
     this.rateInfoUpdateTimer = setInterval(() => {
       this.getRateInfo(false).then();
-    }, 86400 * 1000);
+    }, 3 * 60 * 60 * 1000);
   }
 
   async stop(): Promise<void> {
