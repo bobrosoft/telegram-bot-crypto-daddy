@@ -38,4 +38,11 @@ describe('JokeCommandService', () => {
 
     expect(ctxMock.replyWithHTML).toBeCalledWith('helpMsg');
   });
+
+  it('should answer on /help@CryptoDaddyyBot command', async () => {
+    jest.spyOn(ctxMock, 'replyWithHTML');
+    await telegrafMock.triggerHears('/help@CryptoDaddyyBot');
+
+    expect(ctxMock.replyWithHTML).toBeCalledWith('helpMsg');
+  });
 });
