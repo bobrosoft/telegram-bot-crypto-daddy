@@ -5,6 +5,7 @@ import {container} from 'tsyringe';
 import {translationsRU} from './i18n/ru';
 import {ConfigToken, FetchToken, TFunctionToken} from './misc/injection-tokens';
 import {Config} from './models/config.model';
+import {BestchangeCommandService} from './services/bestchange-command/bestchange-command.service';
 import {HashrateCommandService} from './services/hashrate-command/hashrate-command.service';
 import {HelpCommandService} from './services/help-command/help-command.service';
 import {JokeCommandService} from './services/joke-command/joke-command.service';
@@ -50,6 +51,7 @@ export class App {
     this.services.push(container.resolve(JokeCommandService));
     this.services.push(container.resolve(HashrateCommandService));
     this.services.push(container.resolve(RateCommandService));
+    this.services.push(container.resolve(BestchangeCommandService));
   }
 
   async start(): Promise<void> {

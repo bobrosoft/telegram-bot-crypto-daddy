@@ -46,7 +46,7 @@ export class RateCommandService extends BaseCommandService {
     const rateInfo = await this.getRateInfo();
 
     const response = this.t(`${this.name}.rateInfo`, rateInfo);
-    await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true, disable_notification: true});
+    await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
 
     // await Utils.setTimeoutAsync(600);
     // await this.jokeCommandService.tellJoke(ctx);

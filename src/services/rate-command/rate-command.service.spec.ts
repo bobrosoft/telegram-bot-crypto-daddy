@@ -53,7 +53,6 @@ describe('RateCommandService', () => {
     await telegrafMock.triggerHears('/rate');
 
     expect(ctxMock.replyWithHTML).toBeCalledWith('64.55 70.20 75.77 30473.00 2078.64 21.55 2.41', {
-      disable_notification: true,
       disable_web_page_preview: true,
     });
   });
