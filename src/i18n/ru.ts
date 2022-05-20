@@ -1,6 +1,6 @@
 export const translationsRU = {
   BestchangeCommandService: {
-    resultIntro: 'Вот что на рынке сегодня видел:',
+    resultIntro: 'Вот что на базаре сегодня видел:',
     rateInfo: `<b>{{fromSymbol}}/{{toSymbol}}</b> (<a href="{{url}}">Bestchange.ru</a>):`,
     rateInfoRow: ` • {{title}}: <b>{{price}} ₽</b>`,
   },
@@ -48,7 +48,7 @@ export const translationsRU = {
   },
 
   RateCommandService: {
-    priceDirectionUp: '▲',
+    priceDirectionUp: '💹',
     priceDirectionDown: '🔻',
     rateInfo: `
 Вот что по телику давеча сказали:
