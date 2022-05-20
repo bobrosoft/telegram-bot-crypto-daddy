@@ -48,25 +48,29 @@ export class HashrateCommandService extends BaseCommandService {
   }
 
   async tellGpuInfo(ctx: Context, gpu: string): Promise<void> {
-    const gpuInfoList = await this.getGpuInfoDatabase();
-    const preparedGpu = gpu.toLocaleLowerCase().replace(/\s/g, '');
+    try {
+      const gpuInfoList = await this.getGpuInfoDatabase();
+      const preparedGpu = gpu.toLocaleLowerCase().replace(/\s/g, '');
 
-    const gpus = gpuInfoList.filter(gpu => gpu.searchStr.includes(preparedGpu));
-    if (!gpus.length) {
-      await ctx.replyWithHTML(this.t(`${this.name}.gpuNotFound`));
-      return;
+      const gpus = gpuInfoList.filter(gpu => gpu.searchStr.includes(preparedGpu));
+      if (!gpus.length) {
+        await ctx.replyWithHTML(this.t(`${this.name}.gpuNotFound`));
+        return;
+      }
+
+      let response: string = this.t(`${this.name}.resultIntro`);
+      gpus.forEach(gpu => {
+        response += this.t(`${this.name}.gpuInfo`, gpu).trim();
+        response += this.t(`${this.name}.gpuInfoSeparator`);
+      });
+
+      await ctx.replyWithHTML(response.trim());
+
+      await Utils.setTimeoutAsync(600);
+      await this.jokeCommandService.tellJoke(ctx);
+    } catch (e) {
+      await ctx.replyWithHTML(this.t('common.executionError'));
     }
-
-    let response: string = this.t(`${this.name}.resultIntro`);
-    gpus.forEach(gpu => {
-      response += this.t(`${this.name}.gpuInfo`, gpu).trim();
-      response += this.t(`${this.name}.gpuInfoSeparator`);
-    });
-
-    await ctx.replyWithHTML(response.trim());
-
-    await Utils.setTimeoutAsync(600);
-    await this.jokeCommandService.tellJoke(ctx);
   }
 
   getGpuInfoDatabase(useCache = true): Promise<GpuInfoList> {

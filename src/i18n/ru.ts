@@ -1,4 +1,9 @@
 export const translationsRU = {
+  common: {
+    executionError:
+      'Что-то у меня машина не заводится... Не ну я нимогУ!.. Позже переспроси, а? Сейчас с дядей Серёжей починим... 🛠',
+  },
+
   BestchangeCommandService: {
     resultIntro: 'Вот что на базаре сегодня видел:',
     rateInfo: `<b>{{fromSymbol}}/{{toSymbol}}</b> (<a href="{{url}}">Bestchange.ru</a>):`,
@@ -48,8 +53,8 @@ export const translationsRU = {
   },
 
   RateCommandService: {
-    priceDirectionUp: '💹',
-    priceDirectionDown: '🔻',
+    priceDirectionUp: '⬆️',
+    priceDirectionDown: '⬇️',
     rateInfo: `
 Вот что по телику давеча сказали:
 
@@ -58,10 +63,10 @@ export const translationsRU = {
  • Aliexpress: <b>{{rub.aliexpress}} ₽</b>
  • USDT/RUB: <b>{{rub.bestchange}} ₽</b> (Bestchange)
 
-<b>BTC</b>: <b>\${{btc.price}}</b> {{btc.priceDirection}}
-<b>ETH</b>: <b>\${{eth.price}}</b> {{eth.priceDirection}}
-<b>ETC</b>: <b>\${{etc.price}}</b> {{etc.priceDirection}}
-<b>ERG</b>: <b>\${{erg.price}}</b> {{erg.priceDirection}}
+<b>BTC</b>: <b>\${{btc.price}}</b> ({{btc.priceDiffPercentage}}%) {{btc.priceDirection}}
+<b>ETH</b>: <b>\${{eth.price}}</b> ({{eth.priceDiffPercentage}}%) {{eth.priceDirection}}
+<b>ETC</b>: <b>\${{etc.price}}</b> ({{etc.priceDiffPercentage}}%) {{etc.priceDirection}}
+<b>ERG</b>: <b>\${{erg.price}}</b> ({{erg.priceDiffPercentage}}%) {{erg.priceDirection}}
     `,
   },
 };

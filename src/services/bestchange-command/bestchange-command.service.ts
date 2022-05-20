@@ -41,16 +41,20 @@ export class BestchangeCommandService extends BaseCommandService {
   }
 
   async tellRate(ctx: Context): Promise<void> {
-    const rateInfo = await this.getRateInfo();
+    try {
+      const rateInfo = await this.getRateInfo();
 
-    let response = this.t(`${this.name}.resultIntro`);
-    response += '\n\n';
-    response += this.t(`${this.name}.rateInfo`, rateInfo) + '\n';
-    rateInfo.exchanges.forEach(exchange => {
-      response += this.t(`${this.name}.rateInfoRow`, exchange) + '\n';
-    });
+      let response = this.t(`${this.name}.resultIntro`);
+      response += '\n\n';
+      response += this.t(`${this.name}.rateInfo`, rateInfo) + '\n';
+      rateInfo.exchanges.forEach(exchange => {
+        response += this.t(`${this.name}.rateInfoRow`, exchange) + '\n';
+      });
 
-    await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
+      await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
+    } catch (e) {
+      await ctx.replyWithHTML(this.t('common.executionError'));
+    }
   }
 
   getRateInfo(useCache = true): Promise<BestchangeInfo> {

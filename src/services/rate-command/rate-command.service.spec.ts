@@ -24,6 +24,9 @@ describe('RateCommandService', () => {
         case 'RateCommandService.rateInfo':
           return `${options?.rub.official} ${options?.rub.aliexpress} ${options?.rub.bestchange} ${options?.btc.price} ${options?.eth.price} ${options?.etc.price} ${options?.erg.price}`;
 
+        case 'common.executionError':
+          return 'common.executionError';
+
         default:
           return '';
       }
@@ -55,5 +58,18 @@ describe('RateCommandService', () => {
     expect(ctxMock.replyWithHTML).toBeCalledWith('64.55 70.20 75.77 30473.00 2078.64 21.55 2.41', {
       disable_web_page_preview: true,
     });
+  });
+
+  it('should answer on /rate command with error message if fetch failed', async () => {
+    container.registerInstance(FetchToken, (() => {
+      return Promise.reject('failed to fetch');
+    }) as any);
+
+    container.resolve(RateCommandService);
+
+    jest.spyOn(ctxMock, 'replyWithHTML');
+    await telegrafMock.triggerHears('/rate');
+
+    expect(ctxMock.replyWithHTML).toBeCalledWith('common.executionError');
   });
 });

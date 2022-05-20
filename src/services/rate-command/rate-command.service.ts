@@ -5,6 +5,7 @@ import {clearInterval} from 'timers';
 import {autoInjectable, inject} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {Utils} from '../../misc/utils';
+import {AppError} from '../../models/app-error.model';
 import {ContextWithMatch} from '../../models/context-with-match.model';
 import {CryptoTicker} from '../../models/crypto-ticker.model';
 import {Fetch} from '../../models/fetch.model';
@@ -43,13 +44,14 @@ export class RateCommandService extends BaseCommandService {
   }
 
   async tellRate(ctx: Context): Promise<void> {
-    const rateInfo = await this.getRateInfo();
+    try {
+      const rateInfo = await this.getRateInfo();
 
-    const response = this.t(`${this.name}.rateInfo`, rateInfo);
-    await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
-
-    // await Utils.setTimeoutAsync(600);
-    // await this.jokeCommandService.tellJoke(ctx);
+      const response = this.t(`${this.name}.rateInfo`, rateInfo);
+      await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
+    } catch (e) {
+      await ctx.replyWithHTML(this.t('common.executionError'));
+    }
   }
 
   getRateInfo(useCache = true): Promise<RateInfo> {
@@ -59,6 +61,7 @@ export class RateCommandService extends BaseCommandService {
 
     this.rateInfo = new Promise<RateInfo>(async (resolve, reject) => {
       try {
+        let failureCount = 0;
         let result: RateInfo = {
           rub: {
             official: '???',
@@ -79,6 +82,7 @@ export class RateCommandService extends BaseCommandService {
 
           this.log('Success');
         } catch (e) {
+          failureCount++;
           this.logFetchError(e as any);
         }
 
@@ -89,6 +93,7 @@ export class RateCommandService extends BaseCommandService {
 
           this.log('Success');
         } catch (e) {
+          failureCount++;
           this.logFetchError(e as any);
         }
 
@@ -101,7 +106,18 @@ export class RateCommandService extends BaseCommandService {
 
           this.log('Success');
         } catch (e) {
+          failureCount++;
           this.logFetchError(e as any);
+        }
+
+        // Check for failures during fetch
+        if (failureCount >= 2) {
+          throw new AppError('TOO_MANY_FAILURES');
+        } else if (failureCount >= 1) {
+          // Need to schedule short update
+          setTimeout(() => {
+            this.getRateInfo(false).then();
+          }, 10 * 60 * 1000);
         }
 
         resolve(result);
@@ -206,8 +222,11 @@ export class RateCommandService extends BaseCommandService {
       return {
         symbol: item?.symbol.toUpperCase(),
         price: Utils.normalizePrice(item?.current_price),
+        priceDiffPercentage: Utils.normalizePrice(item?.price_change_percentage_24h)
+          .replace('-', '–')
+          .replace(/^(?=\d)/, '+'),
         priceDirection:
-          item?.price_change_24h > 0
+          item?.price_change_percentage_24h > 0
             ? this.t(`${this.name}.priceDirectionUp`)
             : this.t(`${this.name}.priceDirectionDown`),
       };
