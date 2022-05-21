@@ -67,6 +67,7 @@ export const translationsRU = {
 <b>ETH</b>: <b>\${{eth.price}}</b> ({{eth.priceDiffPercentage}}%) {{eth.priceDirection}}
 <b>ETC</b>: <b>\${{etc.price}}</b> ({{etc.priceDiffPercentage}}%) {{etc.priceDirection}}
 <b>ERG</b>: <b>\${{erg.price}}</b> ({{erg.priceDiffPercentage}}%) {{erg.priceDirection}}
+<b>TON</b>: <b>\${{ton.price}}</b> ({{ton.priceDiffPercentage}}%) {{ton.priceDirection}}
     `,
   },
 };

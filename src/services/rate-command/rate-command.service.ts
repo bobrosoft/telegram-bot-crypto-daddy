@@ -216,6 +216,7 @@ export class RateCommandService extends BaseCommandService {
     eth: CryptoTicker;
     etc: CryptoTicker;
     erg: CryptoTicker;
+    ton: CryptoTicker;
   }> {
     const findSymbol = (symbol: string): CryptoTicker => {
       const item = data.find((c: any) => c.symbol === symbol);
@@ -233,7 +234,7 @@ export class RateCommandService extends BaseCommandService {
     };
 
     const data = await this.fetch(
-      'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,ethereum-classic,ergo',
+      'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,ethereum-classic,ergo,the-open-network',
     ).then(r => r.json());
 
     return {
@@ -241,6 +242,7 @@ export class RateCommandService extends BaseCommandService {
       eth: findSymbol('eth'),
       etc: findSymbol('etc'),
       erg: findSymbol('erg'),
+      ton: findSymbol('ton'),
     };
   }
 
