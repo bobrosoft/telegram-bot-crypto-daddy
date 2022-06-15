@@ -72,7 +72,7 @@ export class BestchangeCommandService extends BaseCommandService {
         };
 
         this.log('Getting rate info from Bestchange...');
-        const content = await this.fetch('https://www.bestchange.ru/action.php', {
+        const content = await this.fetch('https://www.bestchange.com/action.php', {
           method: 'POST',
           body: 'action=getrates&page=rates&from=139&to=105&city=0&type=&give=&get=&commission=0&sort=to&range=desc&sortm=0&tsid=0',
           headers: {'content-type': 'application/x-www-form-urlencoded'},

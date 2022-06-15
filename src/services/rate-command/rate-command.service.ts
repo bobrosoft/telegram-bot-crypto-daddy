@@ -136,7 +136,7 @@ export class RateCommandService extends BaseCommandService {
     let rubBestchange: string;
     let rubOfficial: string;
 
-    const content = await this.fetch('https://www.bestchange.ru/action.php', {
+    const content = await this.fetch('https://www.bestchange.com/action.php', {
       method: 'POST',
       body: 'action=getrates&page=rates&from=105&to=36&city=0&type=&give=&get=&commission=0&sort=from&range=asc&sortm=0&tsid=0',
       headers: {'content-type': 'application/x-www-form-urlencoded'},
