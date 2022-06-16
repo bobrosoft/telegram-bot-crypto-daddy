@@ -22,7 +22,10 @@ describe('RateCommandService', () => {
     container.registerInstance(TFunctionToken, (key, options?: any) => {
       switch (key) {
         case 'RateCommandService.rateInfo':
-          return `${options?.rub.official} ${options?.rub.aliexpress} ${options?.rub.bestchange} ${options?.btc.price} ${options?.eth.price} ${options?.etc.price} ${options?.erg.price}`;
+          return `${options?.rub.official} ${options?.rub.aliexpress} ${options?.rub.bestchange}`;
+
+        case 'RateCommandService.rateInfoRow':
+          return ` ${options?.ticker.price}`;
 
         case 'common.executionError':
           return 'common.executionError';

@@ -63,11 +63,7 @@ export const translationsRU = {
  • Aliexpress: <b>{{rub.aliexpress}} ₽</b>
  • USDT/RUB: <b>{{rub.bestchange}} ₽</b> (Bestchange)
 
-<b>BTC</b>: <b>\${{btc.price}}</b> ({{btc.priceDiffPercentage}}%) {{btc.priceDirection}}
-<b>ETH</b>: <b>\${{eth.price}}</b> ({{eth.priceDiffPercentage}}%) {{eth.priceDirection}}
-<b>ETC</b>: <b>\${{etc.price}}</b> ({{etc.priceDiffPercentage}}%) {{etc.priceDirection}}
-<b>ERG</b>: <b>\${{erg.price}}</b> ({{erg.priceDiffPercentage}}%) {{erg.priceDirection}}
-<b>TON</b>: <b>\${{ton.price}}</b> ({{ton.priceDiffPercentage}}%) {{ton.priceDirection}}
-    `,
+`,
+    rateInfoRow: `<b>{{ticker.symbol}}</b>: <b>\${{ticker.price}}</b> ({{ticker.priceDiffPercentage}}%) {{ticker.priceDirection}}\n`,
   },
 };

@@ -47,7 +47,10 @@ export class RateCommandService extends BaseCommandService {
     try {
       const rateInfo = await this.getRateInfo();
 
-      const response = this.t(`${this.name}.rateInfo`, rateInfo);
+      let response = this.t(`${this.name}.rateInfo`, rateInfo);
+      rateInfo.crypto.forEach(ticker => {
+        response += this.t(`${this.name}.rateInfoRow`, {ticker});
+      });
       await ctx.replyWithHTML(response.trim(), {disable_web_page_preview: true});
     } catch (e) {
       await ctx.replyWithHTML(this.t('common.executionError'));
@@ -68,10 +71,7 @@ export class RateCommandService extends BaseCommandService {
             aliexpress: '???',
             bestchange: '???',
           },
-          btc: {symbol: 'BTC', price: '???'},
-          eth: {symbol: 'ETH', price: '???'},
-          etc: {symbol: 'ETC', price: '???'},
-          erg: {symbol: 'ERG', price: '???'},
+          crypto: [],
         };
 
         this.log('Getting rate info from remotes: getBestchangeInfo...');
@@ -101,7 +101,7 @@ export class RateCommandService extends BaseCommandService {
         try {
           result = {
             ...result,
-            ...(await this.getCoinGeckoInfo()),
+            crypto: [...(await this.getCoinGeckoInfo())],
           };
 
           this.log('Success');
@@ -211,39 +211,32 @@ export class RateCommandService extends BaseCommandService {
     };
   }
 
-  protected async getCoinGeckoInfo(): Promise<{
-    btc: CryptoTicker;
-    eth: CryptoTicker;
-    etc: CryptoTicker;
-    erg: CryptoTicker;
-    ton: CryptoTicker;
-  }> {
-    const findSymbol = (symbol: string): CryptoTicker => {
-      const item = data.find((c: any) => c.symbol === symbol);
-      return {
-        symbol: item?.symbol.toUpperCase(),
-        price: Utils.normalizePrice(item?.current_price),
-        priceDiffPercentage: Utils.normalizePrice(item?.price_change_percentage_24h)
-          .replace('-', '–')
-          .replace(/^(?=\d)/, '+'),
-        priceDirection:
-          item?.price_change_percentage_24h > 0
-            ? this.t(`${this.name}.priceDirectionUp`)
-            : this.t(`${this.name}.priceDirectionDown`),
-      };
-    };
+  protected async getCoinGeckoInfo(): Promise<CryptoTicker[]> {
+    const cryptoNames = [
+      //
+      'bitcoin',
+      'ethereum',
+      'ethereum-classic',
+      'ergo',
+      'the-open-network',
+      'solana',
+    ];
 
     const data = await this.fetch(
-      'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,ethereum-classic,ergo,the-open-network',
+      'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + cryptoNames.join(','),
     ).then(r => r.json());
 
-    return {
-      btc: findSymbol('btc'),
-      eth: findSymbol('eth'),
-      etc: findSymbol('etc'),
-      erg: findSymbol('erg'),
-      ton: findSymbol('ton'),
-    };
+    return data.map((item: any) => ({
+      symbol: item?.symbol.toUpperCase(),
+      price: Utils.normalizePrice(item?.current_price),
+      priceDiffPercentage: Utils.normalizePrice(item?.price_change_percentage_24h)
+        .replace('-', '–')
+        .replace(/^(?=\d)/, '+'),
+      priceDirection:
+        item?.price_change_percentage_24h > 0
+          ? this.t(`${this.name}.priceDirectionUp`)
+          : this.t(`${this.name}.priceDirectionDown`),
+    }));
   }
 
   protected logFetchError(e: FetchError) {
