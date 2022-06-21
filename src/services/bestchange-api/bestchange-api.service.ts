@@ -1,5 +1,6 @@
 import {autoInjectable, inject} from 'tsyringe';
 import {FetchToken} from '../../misc/injection-tokens';
+import {Utils} from '../../misc/utils';
 import {Exchange} from '../../models/exchange.model';
 import {Fetch} from '../../models/fetch.model';
 import {BaseService} from '../base.service';
@@ -8,6 +9,7 @@ import {LoggerService} from '../logger/logger.service';
 @autoInjectable()
 export class BestchangeApiService extends BaseService {
   protected name = 'BestchangeApiService';
+  protected lastCallTimestamp = 0;
 
   constructor(
     //
@@ -29,6 +31,13 @@ export class BestchangeApiService extends BaseService {
    * Returns list of exchanges with information exchange rates
    */
   async getRates(from: number, to: number): Promise<Exchange[]> {
+    // Need to debounce subsequent API calls
+    if (Date.now() - this.lastCallTimestamp < 10000) {
+      await Utils.setTimeoutAsync(10000);
+      return this.getRates(from, to);
+    }
+
+    this.lastCallTimestamp = Date.now();
     const content = await this.fetch(`https://www.bestchange.ru/api.php?action=getrates&from=${from}&to=${to}`).then(
       r => r.text(),
     );

@@ -42,13 +42,15 @@ export class App {
     container.registerInstance(Telegraf, new Telegraf(config.botToken));
 
     // Create logger
-    container.registerInstance(LoggerService, new LoggerService());
+    container.registerSingleton(LoggerService);
 
     // Register fetch
     container.registerInstance(FetchToken, fetch);
 
     // Register all services
+    container.registerSingleton(BestchangeApiService);
     this.services.push(container.resolve(BestchangeApiService));
+
     this.services.push(container.resolve(HelpCommandService));
     this.services.push(container.resolve(JokeCommandService));
     this.services.push(container.resolve(HashrateCommandService));
