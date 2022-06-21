@@ -11,6 +11,7 @@ import {CryptoTicker} from '../../models/crypto-ticker.model';
 import {Fetch} from '../../models/fetch.model';
 import {RateInfo} from '../../models/rate-info.model';
 import {BaseCommandService} from '../base-command.service';
+import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
@@ -24,6 +25,7 @@ export class RateCommandService extends BaseCommandService {
     @inject(TFunctionToken) protected t: TFunction,
     protected bot: Telegraf,
     @inject(FetchToken) protected fetch: Fetch,
+    protected bestchangeApiService: BestchangeApiService,
   ) {
     super(logger, bot);
 
@@ -74,11 +76,21 @@ export class RateCommandService extends BaseCommandService {
           crypto: [],
         };
 
-        this.log('Getting rate info from remotes: getBestchangeInfo...');
+        this.log('Getting rate info from remotes: getUsdRubPrice...');
         try {
-          const info = await this.getBestchangeInfo();
-          result.rub.official = info.rubOfficial;
-          result.rub.bestchange = info.rubBestchange;
+          const info = await this.getUsdRubPrice();
+          result.rub.official = info;
+
+          this.log('Success');
+        } catch (e) {
+          failureCount++;
+          this.logFetchError(e as any);
+        }
+
+        this.log('Getting rate info from remotes: getUsdtRubPrice...');
+        try {
+          const info = await this.getUsdtRubPrice();
+          result.rub.bestchange = info;
 
           this.log('Success');
         } catch (e) {
@@ -132,32 +144,16 @@ export class RateCommandService extends BaseCommandService {
     return this.rateInfo;
   }
 
-  protected async getBestchangeInfo(): Promise<{rubBestchange: string; rubOfficial: string}> {
-    let rubBestchange: string;
-    let rubOfficial: string;
+  protected async getUsdtRubPrice(): Promise<string> {
+    const exchanges = await this.bestchangeApiService.getRates(36, 105);
+    return Utils.normalizePrice(Number(exchanges[1].price) + 2);
+  }
 
-    const content = await this.fetch('https://www.bestchange.com/action.php', {
-      method: 'POST',
-      body: 'action=getrates&page=rates&from=105&to=36&city=0&type=&give=&get=&commission=0&sort=from&range=asc&sortm=0&tsid=0',
-      headers: {'content-type': 'application/x-www-form-urlencoded'},
-    }).then(r => r.text());
-
-    {
-      const regex = `fs">(.*?)<`;
-      const match = content.matchAll(new RegExp(regex, 'gm'));
-      const rates = Array.from(match, m => (m[1] || '').trim());
-
-      rubBestchange = Utils.normalizePrice(Number(rates[3]) - 2 || rates[0]);
-    }
-
-    {
-      const regex = `helplink.*?bt">(.*?)<`;
-      const match = content.match(new RegExp(regex, 's'));
-
-      rubOfficial = Utils.normalizePrice(match?.[1]);
-    }
-
-    return {rubBestchange, rubOfficial};
+  protected async getUsdRubPrice(): Promise<string> {
+    const usdRubRate = await this.fetch(
+      'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000000TOD.json',
+    ).then(r => r.json());
+    return usdRubRate.marketdata.data[0][8] + '';
   }
 
   protected async getAliInfo(): Promise<{rubAliexpress: string}> {
@@ -226,17 +222,20 @@ export class RateCommandService extends BaseCommandService {
       'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + cryptoNames.join(','),
     ).then(r => r.json());
 
-    return data.map((item: any) => ({
-      symbol: item?.symbol.toUpperCase(),
-      price: Utils.normalizePrice(item?.current_price),
-      priceDiffPercentage: Utils.normalizePrice(item?.price_change_percentage_24h)
-        .replace('-', '–')
-        .replace(/^(?=\d)/, '+'),
-      priceDirection:
-        item?.price_change_percentage_24h > 0
-          ? this.t(`${this.name}.priceDirectionUp`)
-          : this.t(`${this.name}.priceDirectionDown`),
-    }));
+    return data.map(
+      (item: any): CryptoTicker => ({
+        symbol: item?.symbol.toUpperCase(),
+        price: Utils.normalizePrice(item?.current_price),
+        priceCurrency: 'USD',
+        priceDiffPercentage: Utils.normalizePrice(item?.price_change_percentage_24h)
+          .replace('-', '–')
+          .replace(/^(?=\d)/, '+'),
+        priceDirection:
+          item?.price_change_percentage_24h > 0
+            ? this.t(`${this.name}.priceDirectionUp`)
+            : this.t(`${this.name}.priceDirectionDown`),
+      }),
+    );
   }
 
   protected logFetchError(e: FetchError) {

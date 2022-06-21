@@ -1,0 +1,101 @@
+{
+"securities": {
+	"metadata": {
+		"SECID": {"type": "string", "bytes": 36, "max_size": 0},
+		"BOARDID": {"type": "string", "bytes": 12, "max_size": 0},
+		"SHORTNAME": {"type": "string", "bytes": 30, "max_size": 0},
+		"LOTSIZE": {"type": "int32"},
+		"SETTLEDATE": {"type": "date", "bytes": 10, "max_size": 0},
+		"DECIMALS": {"type": "int32"},
+		"FACEVALUE": {"type": "double"},
+		"MARKETCODE": {"type": "string", "bytes": 12, "max_size": 0},
+		"MINSTEP": {"type": "double"},
+		"PREVDATE": {"type": "date", "bytes": 10, "max_size": 0},
+		"SECNAME": {"type": "string", "bytes": 90, "max_size": 0},
+		"REMARKS": {"type": "string", "bytes": 24, "max_size": 0},
+		"STATUS": {"type": "string", "bytes": 3, "max_size": 0},
+		"FACEUNIT": {"type": "string", "bytes": 12, "max_size": 0},
+		"PREVPRICE": {"type": "double"},
+		"PREVWAPRICE": {"type": "double"},
+		"CURRENCYID": {"type": "string", "bytes": 12, "max_size": 0},
+		"LATNAME": {"type": "string", "bytes": 90, "max_size": 0},
+		"LOTDIVIDER": {"type": "int32"}
+	},
+	"columns": ["SECID", "BOARDID", "SHORTNAME", "LOTSIZE", "SETTLEDATE", "DECIMALS", "FACEVALUE", "MARKETCODE", "MINSTEP", "PREVDATE", "SECNAME", "REMARKS", "STATUS", "FACEUNIT", "PREVPRICE", "PREVWAPRICE", "CURRENCYID", "LATNAME", "LOTDIVIDER"], 
+	"data": [
+		["USD000000TOD", "CETS", "USDRUB_TOD", 1000, "2022-06-21", 4, 1, "CURR", 0.0025, "2022-06-20", "USDRUB_TOD - USD\/РУБ", null, "A", "USD", 56.14, 56.6685, "RUB", "USDRUB_TOD - USD\/RUB", 1]
+	]
+},
+"marketdata": {
+	"metadata": {
+		"HIGHBID": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"BIDDEPTH": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"LOWOFFER": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"OFFERDEPTH": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"SPREAD": {"type": "double"},
+		"HIGH": {"type": "double"},
+		"LOW": {"type": "double"},
+		"OPEN": {"type": "double"},
+		"LAST": {"type": "double"},
+		"LASTCNGTOLASTWAPRICE": {"type": "double"},
+		"VALTODAY": {"type": "int64"},
+		"VOLTODAY": {"type": "double"},
+		"VALTODAY_USD": {"type": "int64"},
+		"WAPRICE": {"type": "double"},
+		"WAPTOPREVWAPRICE": {"type": "double"},
+		"CLOSEPRICE": {"type": "double"},
+		"NUMTRADES": {"type": "int32"},
+		"TRADINGSTATUS": {"type": "string", "bytes": 3, "max_size": 0},
+		"UPDATETIME": {"type": "time", "bytes": 10, "max_size": 0},
+		"BOARDID": {"type": "string", "bytes": 12, "max_size": 0},
+		"SECID": {"type": "string", "bytes": 36, "max_size": 0},
+		"WAPTOPREVWAPRICEPRCNT": {"type": "double"},
+		"BID": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"BIDDEPTHT": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"NUMBIDS": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"OFFER": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"OFFERDEPTHT": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"NUMOFFERS": {"type": "undefined", "bytes": 0, "max_size": 0},
+		"CHANGE": {"type": "double"},
+		"LASTCHANGEPRCNT": {"type": "double"},
+		"VALUE": {"type": "double"},
+		"VALUE_USD": {"type": "double"},
+		"SEQNUM": {"type": "int64"},
+		"QTY": {"type": "int32"},
+		"TIME": {"type": "time", "bytes": 10, "max_size": 0},
+		"PRICEMINUSPREVWAPRICE": {"type": "double"},
+		"LASTCHANGE": {"type": "double"},
+		"LASTTOPREVPRICE": {"type": "double"},
+		"VALTODAY_RUR": {"type": "int64"},
+		"SYSTIME": {"type": "datetime", "bytes": 19, "max_size": 0},
+		"MARKETPRICE": {"type": "double"},
+		"MARKETPRICETODAY": {"type": "double"},
+		"MARKETPRICE2": {"type": "double"},
+		"ADMITTEDQUOTE": {"type": "double"},
+		"LOPENPRICE": {"type": "double"}
+	},
+	"columns": ["HIGHBID", "BIDDEPTH", "LOWOFFER", "OFFERDEPTH", "SPREAD", "HIGH", "LOW", "OPEN", "LAST", "LASTCNGTOLASTWAPRICE", "VALTODAY", "VOLTODAY", "VALTODAY_USD", "WAPRICE", "WAPTOPREVWAPRICE", "CLOSEPRICE", "NUMTRADES", "TRADINGSTATUS", "UPDATETIME", "BOARDID", "SECID", "WAPTOPREVWAPRICEPRCNT", "BID", "BIDDEPTHT", "NUMBIDS", "OFFER", "OFFERDEPTHT", "NUMOFFERS", "CHANGE", "LASTCHANGEPRCNT", "VALUE", "VALUE_USD", "SEQNUM", "QTY", "TIME", "PRICEMINUSPREVWAPRICE", "LASTCHANGE", "LASTTOPREVPRICE", "VALTODAY_RUR", "SYSTIME", "MARKETPRICE", "MARKETPRICETODAY", "MARKETPRICE2", "ADMITTEDQUOTE", "LOPENPRICE"], 
+	"data": [
+		[null, null, null, null, 0, 55.9, 54.1975, 55.9, 54.43, -2.2385, 65075390013, 1190396000, 1190396000, 54.667, -2.0015, null, 24978, "N", "19:00:00", "CETS", "USD000000TOD", -3.53, null, null, null, null, null, null, -1.71, 0, 1959480, 36000, 1655828100848, 36, "17:44:47", -2.2385, 0.0025, -3.05, 65075390013, "2022-06-21 19:15:00", null, null, null, null, null]
+	]
+},
+"dataversion": {
+	"metadata": {
+		"data_version": {"type": "int32"},
+		"seqnum": {"type": "int64"}
+	},
+	"columns": ["data_version", "seqnum"], 
+	"data": [
+		[10216, 1655830333235]
+	]
+},
+"marketdata_yields": {
+	"metadata": {
+		"boardid": {"type": "string", "bytes": 12, "max_size": 0},
+		"secid": {"type": "string", "bytes": 36, "max_size": 0}
+	},
+	"columns": ["boardid", "secid"], 
+	"data": [
+
+	]
+}}

@@ -1,14 +1,12 @@
-import * as fs from 'fs';
-import {Response} from 'node-fetch';
 import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
-import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
+import {TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
+import {Exchange} from '../../models/exchange.model';
+import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {BestchangeCommandService} from './bestchange-command.service';
-
-const ethRubFetchResult = fs.readFileSync('src/services/bestchange-command/spec-eth-rub.html');
 
 describe('BestchangeCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -33,11 +31,32 @@ describe('BestchangeCommandService', () => {
     telegrafMock = new TelegrafMock(ctxMock);
     container.registerInstance(Telegraf, telegrafMock as any);
 
-    container.registerInstance(FetchToken, ((url: string) => {
-      if (url.match(/bestchange/)) {
-        return Promise.resolve(new Response(ethRubFetchResult));
-      }
-    }) as any);
+    container.registerInstance(BestchangeApiService, {
+      getRates: () =>
+        Promise.resolve<Exchange[]>([
+          {
+            title: 'NetEx24',
+            price: '135420',
+            fromCurrency: 'ETH',
+            toCurrency: 'RUB',
+            isFavorite: true,
+          },
+          {
+            title: 'QuickChange',
+            price: '134921',
+            fromCurrency: 'ETH',
+            toCurrency: 'RUB',
+            isFavorite: true,
+          },
+          {
+            title: 'ExHub',
+            price: '133863',
+            fromCurrency: 'ETH',
+            toCurrency: 'RUB',
+            isFavorite: true,
+          },
+        ]),
+    } as any);
   });
 
   it('should answer on /bestchange command with rate info', async () => {

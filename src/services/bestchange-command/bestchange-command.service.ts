@@ -3,11 +3,11 @@ import {FetchError} from 'node-fetch';
 import {Telegraf, Context} from 'telegraf';
 import {clearInterval} from 'timers';
 import {autoInjectable, inject} from 'tsyringe';
-import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
+import {TFunctionToken} from '../../misc/injection-tokens';
 import {BestchangeInfo} from '../../models/bestchange-info.model';
 import {ContextWithMatch} from '../../models/context-with-match.model';
-import {Fetch} from '../../models/fetch.model';
 import {BaseCommandService} from '../base-command.service';
+import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
@@ -20,7 +20,7 @@ export class BestchangeCommandService extends BaseCommandService {
     protected logger: LoggerService,
     @inject(TFunctionToken) protected t: TFunction,
     protected bot: Telegraf,
-    @inject(FetchToken) protected fetch: Fetch,
+    protected bestchangeApiService: BestchangeApiService,
   ) {
     super(logger, bot);
 
@@ -72,26 +72,9 @@ export class BestchangeCommandService extends BaseCommandService {
         };
 
         this.log('Getting rate info from Bestchange...');
-        const content = await this.fetch('https://www.bestchange.com/action.php', {
-          method: 'POST',
-          body: 'action=getrates&page=rates&from=139&to=105&city=0&type=&give=&get=&commission=0&sort=to&range=desc&sortm=0&tsid=0',
-          headers: {'content-type': 'application/x-www-form-urlencoded'},
-        }).then(r => r.text());
+        const exchanges = await this.bestchangeApiService.getRates(139, 105);
 
-        {
-          const regex = `ca">(?<title>.*?)<.*?fs">.*?bi">(?<price>.*?)<`;
-          const match = content.matchAll(new RegExp(regex, 'gms'));
-          let exchanges: BestchangeInfo['exchanges'] = Array.from(match, m => ({
-            title: m.groups?.title.trim() || '',
-            price: m.groups?.price.replace(/\s/g, '').replace(/\.\d+/, '') || '',
-          }));
-
-          // Keep only well-known exchanges in the list
-          const wellKnown = ['QuickChange', 'ExHub', 'NetEx24'];
-          exchanges = exchanges.filter(e => wellKnown.includes(e.title));
-
-          result.exchanges = [...exchanges];
-        }
+        result.exchanges = exchanges.map(e => ({title: e.title, price: e.price}));
         this.log('Success');
 
         resolve(result);

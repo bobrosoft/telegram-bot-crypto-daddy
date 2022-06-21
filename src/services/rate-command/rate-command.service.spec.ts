@@ -4,11 +4,13 @@ import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
+import {Exchange} from '../../models/exchange.model';
+import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {RateCommandService} from './rate-command.service';
 
-const tinfoffUsdFetchResult = fs.readFileSync('src/services/rate-command/spec-tinkoff-usdt.html');
+const usdRubTomResult = fs.readFileSync('src/services/rate-command/USD000000TOD.json');
 const aliFetchResult = fs.readFileSync('src/services/rate-command/spec-ali.html');
 const cryptoFetchResult = fs.readFileSync('src/services/rate-command/spec-coingecko.json');
 
@@ -42,14 +44,34 @@ describe('RateCommandService', () => {
     container.registerInstance(Telegraf, telegrafMock as any);
 
     container.registerInstance(FetchToken, ((url: string) => {
-      if (url.match(/bestchange/)) {
-        return Promise.resolve(new Response(tinfoffUsdFetchResult));
-      } else if (url.match(/helpix/)) {
+      if (url.match(/helpix/)) {
         return Promise.resolve(new Response(aliFetchResult));
       } else if (url.match(/coingecko/)) {
         return Promise.resolve(new Response(cryptoFetchResult));
+      } else if (url.match(/moex/)) {
+        return Promise.resolve(new Response(usdRubTomResult));
       }
     }) as any);
+
+    container.registerInstance(BestchangeApiService, {
+      getRates: () =>
+        Promise.resolve<Exchange[]>([
+          {
+            title: 'Dabomax',
+            price: '77.76',
+            fromCurrency: 'USDT',
+            toCurrency: 'RUB',
+            isFavorite: false,
+          },
+          {
+            title: 'QuickChange',
+            price: '76.32',
+            fromCurrency: 'USDT',
+            toCurrency: 'RUB',
+            isFavorite: true,
+          },
+        ]),
+    } as any);
   });
 
   it('should answer on /rate command with rate info', async () => {
@@ -58,7 +80,7 @@ describe('RateCommandService', () => {
     jest.spyOn(ctxMock, 'replyWithHTML');
     await telegrafMock.triggerHears('/rate');
 
-    expect(ctxMock.replyWithHTML).toBeCalledWith('64.55 70.20 75.77 30473.00 2078.64 21.55 2.41', {
+    expect(ctxMock.replyWithHTML).toBeCalledWith('54.43 70.20 74.32 30473.00 2078.64 21.55 2.41', {
       disable_web_page_preview: true,
     });
   });
