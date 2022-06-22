@@ -153,7 +153,7 @@ export class RateCommandService extends BaseCommandService {
     const usdRubRate = await this.fetch(
       'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000000TOD.json',
     ).then(r => r.json());
-    return usdRubRate.marketdata.data[0][8] + '';
+    return Utils.normalizePrice(usdRubRate.marketdata.data[0][8]);
   }
 
   protected async getAliInfo(): Promise<{rubAliexpress: string}> {

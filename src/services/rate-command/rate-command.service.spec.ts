@@ -58,14 +58,14 @@ describe('RateCommandService', () => {
         Promise.resolve<Exchange[]>([
           {
             title: 'Dabomax',
-            price: '77.76',
+            price: '73.76',
             fromCurrency: 'USDT',
             toCurrency: 'RUB',
             isFavorite: false,
           },
           {
             title: 'QuickChange',
-            price: '76.32',
+            price: '72.32',
             fromCurrency: 'USDT',
             toCurrency: 'RUB',
             isFavorite: true,
