@@ -53,8 +53,8 @@ export const translationsRU = {
   },
 
   RateCommandService: {
-    priceDirectionUp: '⬆️',
-    priceDirectionDown: '⬇️',
+    priceDirectionUp: '↗️️',
+    priceDirectionDown: '↘️️',
     rateInfo: `
 Вот что по телику давеча сказали:
 
