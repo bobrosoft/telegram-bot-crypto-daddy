@@ -5,7 +5,7 @@ import {container} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
 import {Exchange} from '../../models/exchange.model';
-import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
+import {KursExpertApiService} from '../kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {RateCommandService} from './rate-command.service';
@@ -53,7 +53,7 @@ describe('RateCommandService', () => {
       }
     }) as any);
 
-    container.registerInstance(BestchangeApiService, {
+    container.registerInstance(KursExpertApiService, {
       getRates: () =>
         Promise.resolve<Exchange[]>([
           {

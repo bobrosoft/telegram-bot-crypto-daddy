@@ -7,7 +7,7 @@ import {TFunctionToken} from '../../misc/injection-tokens';
 import {BestchangeInfo} from '../../models/bestchange-info.model';
 import {ContextWithMatch} from '../../models/context-with-match.model';
 import {BaseCommandService} from '../base-command.service';
-import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
+import {KursExpertApiService} from '../kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
@@ -20,7 +20,7 @@ export class BestchangeCommandService extends BaseCommandService {
     protected logger: LoggerService,
     @inject(TFunctionToken) protected t: TFunction,
     protected bot: Telegraf,
-    protected bestchangeApiService: BestchangeApiService,
+    protected kursExpertApiService: KursExpertApiService,
   ) {
     super(logger, bot);
 
@@ -72,7 +72,7 @@ export class BestchangeCommandService extends BaseCommandService {
         };
 
         this.log('Getting rate info from Bestchange...');
-        const exchanges = await this.bestchangeApiService.getRates(139, 105);
+        const exchanges = await this.kursExpertApiService.getRates('ethereum', 'tinkoff');
 
         result.exchanges = exchanges.map(e => ({title: e.title, price: e.price}));
         this.log('Success');

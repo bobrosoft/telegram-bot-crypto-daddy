@@ -3,7 +3,7 @@ import {container} from 'tsyringe';
 import {TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
 import {Exchange} from '../../models/exchange.model';
-import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
+import {KursExpertApiService} from '../kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {BestchangeCommandService} from './bestchange-command.service';
@@ -31,7 +31,7 @@ describe('BestchangeCommandService', () => {
     telegrafMock = new TelegrafMock(ctxMock);
     container.registerInstance(Telegraf, telegrafMock as any);
 
-    container.registerInstance(BestchangeApiService, {
+    container.registerInstance(KursExpertApiService, {
       getRates: () =>
         Promise.resolve<Exchange[]>([
           {

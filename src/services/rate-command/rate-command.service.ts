@@ -11,7 +11,7 @@ import {CryptoTicker} from '../../models/crypto-ticker.model';
 import {Fetch} from '../../models/fetch.model';
 import {RateInfo} from '../../models/rate-info.model';
 import {BaseCommandService} from '../base-command.service';
-import {BestchangeApiService} from '../bestchange-api/bestchange-api.service';
+import {KursExpertApiService} from '../kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from '../logger/logger.service';
 
 @autoInjectable()
@@ -25,7 +25,7 @@ export class RateCommandService extends BaseCommandService {
     @inject(TFunctionToken) protected t: TFunction,
     protected bot: Telegraf,
     @inject(FetchToken) protected fetch: Fetch,
-    protected bestchangeApiService: BestchangeApiService,
+    protected kursExpertApiService: KursExpertApiService,
   ) {
     super(logger, bot);
 
@@ -145,7 +145,7 @@ export class RateCommandService extends BaseCommandService {
   }
 
   protected async getUsdtRubPrice(): Promise<string> {
-    const exchanges = await this.bestchangeApiService.getRates(36, 105);
+    const exchanges = await this.kursExpertApiService.getRates('usdt.trc-20', 'tinkoff');
     return Utils.normalizePrice(Number(exchanges[1].price) + 2);
   }
 

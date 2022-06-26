@@ -5,11 +5,11 @@ import {container} from 'tsyringe';
 import {translationsRU} from './i18n/ru';
 import {ConfigToken, FetchToken, TFunctionToken} from './misc/injection-tokens';
 import {Config} from './models/config.model';
-import {BestchangeApiService} from './services/bestchange-api/bestchange-api.service';
 import {BestchangeCommandService} from './services/bestchange-command/bestchange-command.service';
 import {HashrateCommandService} from './services/hashrate-command/hashrate-command.service';
 import {HelpCommandService} from './services/help-command/help-command.service';
 import {JokeCommandService} from './services/joke-command/joke-command.service';
+import {KursExpertApiService} from './services/kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from './services/logger/logger.service';
 import {BaseService} from './services/base.service';
 import {provideConfig} from './services/config/config.provider';
@@ -48,8 +48,8 @@ export class App {
     container.registerInstance(FetchToken, fetch);
 
     // Register all services
-    container.registerSingleton(BestchangeApiService);
-    this.services.push(container.resolve(BestchangeApiService));
+    container.registerSingleton(KursExpertApiService);
+    this.services.push(container.resolve(KursExpertApiService));
 
     this.services.push(container.resolve(HelpCommandService));
     this.services.push(container.resolve(JokeCommandService));
