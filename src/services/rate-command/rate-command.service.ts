@@ -151,7 +151,7 @@ export class RateCommandService extends BaseCommandService {
 
   protected async getUsdRubPrice(): Promise<string> {
     const usdRubRate = await this.fetch(
-      'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000000TOD.json',
+      'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000UTSTOM.json',
     ).then(r => r.json());
     return Utils.normalizePrice(usdRubRate.marketdata.data[0][8]);
   }
