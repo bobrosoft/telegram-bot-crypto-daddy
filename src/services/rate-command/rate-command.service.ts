@@ -1,6 +1,6 @@
 import {TFunction} from 'i18next';
 import {FetchError} from 'node-fetch';
-import {Telegraf, Context} from 'telegraf';
+import {Context, Telegraf} from 'telegraf';
 import {clearInterval} from 'timers';
 import {autoInjectable, inject} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
@@ -59,29 +59,32 @@ export class RateCommandService extends BaseCommandService {
     }
   }
 
-  getRateInfo(useCache = true): Promise<RateInfo> {
+  async getRateInfo(useCache = true): Promise<RateInfo> {
     if (useCache && this.rateInfo) {
       return this.rateInfo;
     }
 
+    const prevRateInfo: RateInfo | null = this.rateInfo ? await this.rateInfo : null;
+
     this.rateInfo = new Promise<RateInfo>(async (resolve, reject) => {
       try {
         let failureCount = 0;
-        let result: RateInfo = {
-          rub: {
-            official: '???',
-            aliexpress: '???',
-            bestchange: '???',
-          },
-          crypto: [],
-        };
+        let result: RateInfo = prevRateInfo
+          ? Utils.clone(prevRateInfo) // let's use previous result for "failed to fetch" values
+          : {
+              rub: {
+                official: '???',
+                aliexpress: '???',
+                bestchange: '???',
+              },
+              crypto: [],
+            };
 
         this.log('Getting rate info from remotes: getUsdRubPrice...');
         try {
-          const info = await this.getUsdRubPrice();
-          result.rub.official = info;
+          result.rub.official = await this.getUsdRubPrice();
 
-          this.log('Success');
+          this.log('Success (getUsdRubPrice)');
         } catch (e) {
           failureCount++;
           this.logFetchError(e as any);
@@ -89,10 +92,9 @@ export class RateCommandService extends BaseCommandService {
 
         this.log('Getting rate info from remotes: getUsdtRubPrice...');
         try {
-          const info = await this.getUsdtRubPrice();
-          result.rub.bestchange = info;
+          result.rub.bestchange = await this.getUsdtRubPrice();
 
-          this.log('Success');
+          this.log('Success (getUsdtRubPrice)');
         } catch (e) {
           failureCount++;
           this.logFetchError(e as any);
@@ -103,7 +105,7 @@ export class RateCommandService extends BaseCommandService {
           const info = await this.getAliInfo();
           result.rub.aliexpress = info.rubAliexpress;
 
-          this.log('Success');
+          this.log('Success (getAliInfo)');
         } catch (e) {
           failureCount++;
           this.logFetchError(e as any);
@@ -116,20 +118,22 @@ export class RateCommandService extends BaseCommandService {
             crypto: [...(await this.getCoinGeckoInfo())],
           };
 
-          this.log('Success');
+          this.log('Success (getCoinGeckoInfo)');
         } catch (e) {
           failureCount++;
           this.logFetchError(e as any);
         }
 
         // Check for failures during fetch
-        if (failureCount >= 2) {
-          throw new AppError('TOO_MANY_FAILURES');
-        } else if (failureCount >= 1) {
-          // Need to schedule short update
-          setTimeout(() => {
-            this.getRateInfo(false).then();
-          }, 10 * 60 * 1000);
+        if (failureCount >= 1) {
+          if (prevRateInfo) {
+            // Need to schedule short update
+            setTimeout(() => {
+              this.getRateInfo(false).then();
+            }, 10 * 60 * 1000);
+          } else {
+            throw new AppError('TOO_MANY_FAILURES');
+          }
         }
 
         resolve(result);
@@ -153,6 +157,11 @@ export class RateCommandService extends BaseCommandService {
     const usdRubRate = await this.fetch(
       'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000UTSTOM.json',
     ).then(r => r.json());
+
+    if (!usdRubRate.marketdata.data[0][8]) {
+      throw new AppError('MOEX_FETCH_FAILURE', 'Failed to fetch USD000UTSTOM');
+    }
+
     return Utils.normalizePrice(usdRubRate.marketdata.data[0][8]);
   }
 

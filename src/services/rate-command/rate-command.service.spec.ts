@@ -4,15 +4,16 @@ import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
 import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
+import {Utils} from '../../misc/utils';
 import {Exchange} from '../../models/exchange.model';
 import {KursExpertApiService} from '../kurs-expert-api/kurs-expert-api.service';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {RateCommandService} from './rate-command.service';
 
-const usdRubTomResult = fs.readFileSync('src/services/rate-command/USD000000TOD.json');
-const aliFetchResult = fs.readFileSync('src/services/rate-command/spec-ali.html');
-const cryptoFetchResult = fs.readFileSync('src/services/rate-command/spec-coingecko.json');
+const usdRubTomResult = fs.readFileSync(`${__dirname}/USD000000TOD.json`);
+const aliFetchResult = fs.readFileSync(`${__dirname}/spec-ali.html`);
+const cryptoFetchResult = fs.readFileSync(`${__dirname}/spec-coingecko.json`);
 
 describe('RateCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -88,6 +89,27 @@ describe('RateCommandService', () => {
   it('should answer on /rate command with error message if fetch failed', async () => {
     container.registerInstance(FetchToken, (() => {
       return Promise.reject('failed to fetch');
+    }) as any);
+
+    container.resolve(RateCommandService);
+
+    jest.spyOn(ctxMock, 'replyWithHTML');
+    await telegrafMock.triggerHears('/rate');
+
+    expect(ctxMock.replyWithHTML).toBeCalledWith('common.executionError');
+  });
+
+  it('should answer on /rate command with error message if MOEX rate returned as 0', async () => {
+    container.registerInstance(FetchToken, ((url: string) => {
+      if (url.match(/helpix/)) {
+        return Promise.resolve(new Response(aliFetchResult));
+      } else if (url.match(/coingecko/)) {
+        return Promise.resolve(new Response(cryptoFetchResult));
+      } else if (url.match(/moex/)) {
+        const usdRubTomResultMock = Utils.clone(JSON.parse(usdRubTomResult.toString()));
+        usdRubTomResultMock.marketdata.data[0][8] = 0;
+        return Promise.resolve(new Response(JSON.stringify(usdRubTomResultMock)));
+      }
     }) as any);
 
     container.resolve(RateCommandService);

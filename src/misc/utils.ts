@@ -10,4 +10,11 @@ export class Utils {
   static normalizePrice(value: string | number | undefined): string {
     return Number(value).toFixed(2);
   }
+
+  /**
+   * Clones simple objects
+   */
+  static clone<T>(source: T): T {
+    return JSON.parse(JSON.stringify(source));
+  }
 }
