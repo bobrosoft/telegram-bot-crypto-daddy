@@ -80,15 +80,15 @@ export class RateCommandService extends BaseCommandService {
               crypto: [],
             };
 
-        this.log('Getting rate info from remotes: getUsdRubPrice...');
-        try {
-          result.rub.official = await this.getUsdRubPrice();
-
-          this.log('Success (getUsdRubPrice)');
-        } catch (e) {
-          failureCount++;
-          this.logFetchError(e as any);
-        }
+        // this.log('Getting rate info from remotes: getUsdRubPrice...');
+        // try {
+        //   result.rub.official = await this.getUsdRubPrice();
+        //
+        //   this.log('Success (getUsdRubPrice)');
+        // } catch (e) {
+        //   failureCount++;
+        //   this.logFetchError(e as any);
+        // }
 
         this.log('Getting rate info from remotes: getUsdtRubPrice...');
         try {
