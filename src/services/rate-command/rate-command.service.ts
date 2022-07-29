@@ -126,21 +126,19 @@ export class RateCommandService extends BaseCommandService {
 
         // Check for failures during fetch
         if (failureCount >= 1) {
-          if (prevRateInfo) {
-            // Need to schedule short update
-            setTimeout(() => {
-              this.getRateInfo(false).then();
-            }, 10 * 60 * 1000);
-          } else {
+          // Need to schedule short update
+          setTimeout(() => {
+            this.getRateInfo(false).then();
+          }, 10 * 60 * 1000);
+
+          if (failureCount >= 2 && !prevRateInfo) {
             throw new AppError('TOO_MANY_FAILURES');
           }
         }
 
         resolve(result);
       } catch (e) {
-        this.logFetchError(e as any);
-
-        this.rateInfo = undefined;
+        this.log(e as any);
         reject(e);
       }
     });
@@ -156,6 +154,7 @@ export class RateCommandService extends BaseCommandService {
   protected async getUsdRubPrice(): Promise<string> {
     const usdRubRate = await this.fetch(
       'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000UTSTOM.json',
+      {timeout: 30000},
     ).then(r => r.json());
 
     if (!usdRubRate.marketdata.data[0][8]) {

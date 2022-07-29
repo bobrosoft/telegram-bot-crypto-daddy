@@ -104,7 +104,7 @@ describe('RateCommandService', () => {
       if (url.match(/helpix/)) {
         return Promise.resolve(new Response(aliFetchResult));
       } else if (url.match(/coingecko/)) {
-        return Promise.resolve(new Response(cryptoFetchResult));
+        return Promise.reject(new Error());
       } else if (url.match(/moex/)) {
         const usdRubTomResultMock = Utils.clone(JSON.parse(usdRubTomResult.toString()));
         usdRubTomResultMock.marketdata.data[0][8] = 0;
