@@ -125,15 +125,8 @@ export class RateCommandService extends BaseCommandService {
         }
 
         // Check for failures during fetch
-        if (failureCount >= 1) {
-          // Need to schedule short update
-          setTimeout(() => {
-            this.getRateInfo(false).then();
-          }, 10 * 60 * 1000);
-
-          if (failureCount >= 2 && !prevRateInfo) {
-            throw new AppError('TOO_MANY_FAILURES');
-          }
+        if (failureCount >= 2 && !prevRateInfo) {
+          throw new AppError('TOO_MANY_FAILURES');
         }
 
         resolve(result);
