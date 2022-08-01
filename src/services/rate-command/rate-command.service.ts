@@ -80,15 +80,15 @@ export class RateCommandService extends BaseCommandService {
               crypto: [],
             };
 
-        // this.log('Getting rate info from remotes: getUsdRubPrice...');
-        // try {
-        //   result.rub.official = await this.getUsdRubPrice();
-        //
-        //   this.log('Success (getUsdRubPrice)');
-        // } catch (e) {
-        //   failureCount++;
-        //   this.logFetchError(e as any);
-        // }
+        this.log('Getting rate info from remotes: getUsdRubPrice...');
+        try {
+          result.rub.official = await this.getUsdRubPrice();
+
+          this.log('Success (getUsdRubPrice)');
+        } catch (e) {
+          failureCount++;
+          this.logFetchError(e as any);
+        }
 
         this.log('Getting rate info from remotes: getUsdtRubPrice...');
         try {
@@ -145,6 +145,11 @@ export class RateCommandService extends BaseCommandService {
   }
 
   protected async getUsdRubPrice(): Promise<string> {
+    // return this.getUsdRubPriceMoex();
+    return this.getUsdRubPriceBankiros();
+  }
+
+  protected async getUsdRubPriceMoex(): Promise<string> {
     const usdRubRate = await this.fetch(
       'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities/USD000UTSTOM.json',
       {timeout: 30000},
@@ -155,6 +160,32 @@ export class RateCommandService extends BaseCommandService {
     }
 
     return Utils.normalizePrice(usdRubRate.marketdata.data[0][8]);
+  }
+
+  protected async getUsdRubPriceBankiros(): Promise<string> {
+    const usdRubRate = await this.fetch('https://bankiros.ru/ajax/moex-tool?tool_id=1', {
+      timeout: 30000,
+      headers: {
+        accept: '*/*',
+        'accept-language': 'en,ru;q=0.9',
+        'sec-ch-ua': '".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'x-requested-with': 'XMLHttpRequest',
+        referrer: 'https://bankiros.ru/currency/moex/usdrub-tom',
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36',
+      },
+    }).then(r => r.json());
+
+    if (!usdRubRate.data?.last) {
+      throw new AppError('MOEX_FETCH_FAILURE', 'Failed to fetch USD000UTSTOM');
+    }
+
+    return Utils.normalizePrice(usdRubRate.data?.last);
   }
 
   protected async getAliInfo(): Promise<{rubAliexpress: string}> {

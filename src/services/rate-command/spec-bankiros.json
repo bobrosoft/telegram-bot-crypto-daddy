@@ -1,0 +1,22 @@
+{
+  "error": false,
+  "data": {
+    "id": "1",
+    "date_parse": "1659350761",
+    "short_name": "USDRUB_TOM",
+    "full_name": "USDRUB_TOM - USD/РУБ",
+    "currency_id": "1",
+    "info": "Валютная пара доллар США – российский рубль. Приставка TOM (англ. tomorrow) означает, что срок исполнения обязательств по сделке переходит на первый рабочий день после ее проведения.",
+    "lot_size": "1000",
+    "qty": "1",
+    "code": "USD000UTSTOM",
+    "last": "61.8350",
+    "open": "61.3150",
+    "change": "0.2150",
+    "change_percent": "0.35",
+    "low": "61.3150",
+    "high": "62.6675",
+    "currency_name": "USD",
+    "currency_symbol": "$"
+  }
+}
