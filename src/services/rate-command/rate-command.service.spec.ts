@@ -84,7 +84,7 @@ describe('RateCommandService', () => {
     jest.spyOn(ctxMock, 'replyWithHTML');
     await telegrafMock.triggerHears('/rate');
 
-    expect(ctxMock.replyWithHTML).toBeCalledWith('61.84 70.20 74.32 30473.00 2078.64 21.55 2.41', {
+    expect(ctxMock.replyWithHTML).toBeCalledWith('61.84 76.49 74.32 30473.00 2078.64 21.55 2.41', {
       disable_web_page_preview: true,
     });
   });

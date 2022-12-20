@@ -6,7 +6,7 @@ import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {HelpCommandService} from './help-command.service';
 
-describe('JokeCommandService', () => {
+describe('HelpCommandService', () => {
   let ctxMock: TelegrafContextMock;
   let telegrafMock: TelegrafMock;
 

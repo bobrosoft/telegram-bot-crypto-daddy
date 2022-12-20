@@ -17,7 +17,7 @@ export abstract class BaseCommandService extends BaseService {
       new RegExp(`^\/(?<command>${variations.join('|')})(@[\\w\\-]*)?(\\s+(?<params>[^]*))?$`),
       async ctx => {
         this.log(
-          `received command: "${ctx.message.text}" from: ${ctx.message.from.username}(ID: ${ctx.message.from.id}) on chat.id: ${ctx.chat.id}`,
+          `received command: "${ctx.message?.text}" from: ${ctx.message?.from?.username}(ID: ${ctx.message?.from?.id}) on chat.id: ${ctx.chat?.id}`,
         );
         await callback(ctx);
       },
