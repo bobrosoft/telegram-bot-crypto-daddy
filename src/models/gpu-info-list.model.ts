@@ -1,4 +1,4 @@
-export interface GpuInfoListItem {
+export interface Gpu {
   searchStr: string;
   href: string;
   title: string;
@@ -8,4 +8,4 @@ export interface GpuInfoListItem {
   roi?: string;
 }
 
-export type GpuInfoList = GpuInfoListItem[];
+export type GpuInfoList = Gpu[];

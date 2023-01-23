@@ -81,25 +81,24 @@ export class HashrateCommandService extends BaseCommandService {
     this.gpuInfoList = new Promise(async (resolve, reject) => {
       try {
         this.log('Getting GPUs info from remote...');
-        const content = await this.fetch('https://www.hashrate.no/ETH').then(r => r.text());
+        const content = await this.fetch('https://www.hashrate.no/coins/ETC').then(r => r.text());
 
         // Pre-filter content
-        const match1 = content.match(/w3-table(?<content>.*?)<\/table/m);
+        const match1 = content.match(/w3-table(?<content>.*?)<\/table/ms);
 
         // Parse content
         const regex =
-          `td.*?gpulist.*?href.*?'(?<href>.*?)'` +
-          `.*?\/>(?<title>.*?)<\/a>` +
-          `.*?gpulist.*?gpulist.*?>(?<hashrate>.*?)<` +
-          `.*?gpulist.*?>(?<power>.*?)<` +
-          `.*?gpulist.*?gpulist.*?(?<profit>\\$.*?)<` +
-          `.*?gpulist.*?>(?<roi>.*?)<`;
-        const match2 = (match1?.groups?.content || '').matchAll(new RegExp(regex, 'gm'));
+          `td.*?gpulist.*?href='(?<href>[^']*)'` +
+          `.*?>(?<title>.*?)<\\/a>` +
+          `.*?gpulist.*?>(?<profit>\\$.*?)<.*?>(?<hashrate>.*?)<` +
+          `.*?gpulist.*?>(?<power>.*?)<\\/th`;
+        const match2 = (match1?.groups?.content || '').matchAll(new RegExp(regex, 'gms'));
 
         const result: GpuInfoList = Array.from(match2, m => {
           return {
             ...m.groups,
-            href: `https://www.hashrate.no${m.groups?.href}#:~:text=OVERCLOCKS`,
+            title: m.groups?.title.replace(/\n/g, '').replace(/\s+/g, ' '),
+            href: `https://www.hashrate.no${m.groups?.href}#:~:text=AND%20ESTIMATES`,
             searchStr: (m.groups?.title || '').toLocaleLowerCase().replace(/\s/g, ''),
           } as any;
         });

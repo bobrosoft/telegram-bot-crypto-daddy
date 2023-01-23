@@ -15,8 +15,8 @@ export const translationsRU = {
     resultIntro: 'Вот смотри, что папка в газетке нашел:\n\n',
     gpuInfo: `
 <b>{{title}}</b> 🎮
- • Hashrate: <b>{{hashrate}}</b> (ETH) | {{power}} | <a href="{{href}}">OC Settings</a>
- • Profit: {{profit}}/day (ROI: {{roi}})
+ • Hashrate: <b>{{hashrate}}</b> (ETC) | {{power}} | <a href="{{href}}">OC Settings</a>
+ • Profit: {{profit}}/day
     `,
     gpuInfoSeparator: '\n\n',
     gpuNotFound: 'Это что за хрень? Не знаю такой. Чего умного спросил бы лучше, а?',
