@@ -194,9 +194,9 @@ export class RateCommandService extends BaseCommandService {
     const content = await this.fetch('https://helpix.ru/currency/').then(r => r.text());
 
     {
-      const regex = `b-tabcurr__td">(.*?)<`;
-      const match = content.matchAll(new RegExp(regex, 'gm'));
-      const rates = Array.from(match, m => (m[1] || '').trim());
+      const regex = `b-tabcurr__td">(.*?)<\/`;
+      const match = content.matchAll(new RegExp(regex, 'gms'));
+      const rates = Array.from(match, m => (m[1] || '').trim().replace(/<.*?>/gms, ''));
 
       // Find last price listing
       let i = 2;
