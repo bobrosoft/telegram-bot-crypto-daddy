@@ -201,7 +201,7 @@ export class RateCommandService extends BaseCommandService {
       // Find last price listing
       let i = 2;
       while (rates[i] === '-') {
-        i += 10;
+        i += 8;
       }
 
       rubAliexpress = Utils.normalizePrice(rates[i]?.toString());
