@@ -15,6 +15,7 @@ const usdRubTomResultMoex = fs.readFileSync(`${__dirname}/USD000000TOD.json`);
 const usdRubTomResultBankiros = fs.readFileSync(`${__dirname}/spec-bankiros.json`);
 const aliFetchResult = fs.readFileSync(`${__dirname}/spec-ali.html`);
 const cryptoFetchResult = fs.readFileSync(`${__dirname}/spec-coingecko.json`);
+const yandexFetchResult = fs.readFileSync(`${__dirname}/spec-yandex.xml`);
 
 describe('RateCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -54,6 +55,8 @@ describe('RateCommandService', () => {
         return Promise.resolve(new Response(usdRubTomResultMoex));
       } else if (url.match(/bankiros/)) {
         return Promise.resolve(new Response(usdRubTomResultBankiros));
+      } else if (url.match(/yandex/)) {
+        return Promise.resolve(new Response(yandexFetchResult));
       }
     }) as any);
 
@@ -84,7 +87,7 @@ describe('RateCommandService', () => {
     jest.spyOn(ctxMock, 'replyWithHTML');
     await telegrafMock.triggerHears('/rate');
 
-    expect(ctxMock.replyWithHTML).toBeCalledWith('61.84 82.83 74.32 30473.00 2078.64 21.55 2.41', {
+    expect(ctxMock.replyWithHTML).toBeCalledWith('96.99 82.83 74.32 30473.00 2078.64 21.55 2.41', {
       disable_web_page_preview: true,
     });
   });

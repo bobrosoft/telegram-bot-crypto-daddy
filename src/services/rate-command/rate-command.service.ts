@@ -146,7 +146,7 @@ export class RateCommandService extends BaseCommandService {
 
   protected async getUsdRubPrice(): Promise<string> {
     // return this.getUsdRubPriceMoex();
-    return this.getUsdRubPriceBankiros();
+    return this.getUsdRubPriceYandex();
   }
 
   protected async getUsdRubPriceMoex(): Promise<string> {
@@ -186,6 +186,28 @@ export class RateCommandService extends BaseCommandService {
     }
 
     return Utils.normalizePrice(usdRubRate.data?.last);
+  }
+
+  protected async getUsdRubPriceYandex(): Promise<string> {
+    const xmlText = await this.fetch('https://export.yandex.ru/bar/quotes.xml?id=1', {
+      headers: {
+        accept: '*/*',
+        'accept-language': 'en,ru;q=0.9',
+        'sec-ch-ua': '".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'x-requested-with': 'XMLHttpRequest',
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36',
+      },
+    }).then(r => r.text());
+
+    const match = xmlText.match(/<value>(.*?)</);
+
+    return Utils.normalizePrice(match?.[1]);
   }
 
   protected async getAliInfo(): Promise<{rubAliexpress: string}> {
