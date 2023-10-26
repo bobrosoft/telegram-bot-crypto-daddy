@@ -205,9 +205,10 @@ export class RateCommandService extends BaseCommandService {
       },
     }).then(r => r.text());
 
-    const match = xmlText.match(/<value>(.*?)</);
+    const matchTod = xmlText.match(/<value>(.*?)</);
+    const matchTom = xmlText.match(/<tomorrow>(.*?)</); // it may be present or may not
 
-    return Utils.normalizePrice(match?.[1]);
+    return Utils.normalizePrice(matchTom?.[1] || matchTod?.[1]);
   }
 
   protected async getAliInfo(): Promise<{rubAliexpress: string}> {
