@@ -1,0 +1,7 @@
+services:
+  telegram-bot-crypto-daddy:
+    container_name: telegram-bot-crypto-daddy
+    build:
+      context: .
+    environment:
+      NODE_ENV: production

@@ -1,0 +1,9 @@
+.git
+.vscode
+.DS_Store
+
+build
+dist
+node_modules
+scripts
+tmp
