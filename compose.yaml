@@ -3,5 +3,6 @@ services:
     container_name: telegram-bot-crypto-daddy
     build:
       context: .
+    restart: always
     environment:
       NODE_ENV: production
