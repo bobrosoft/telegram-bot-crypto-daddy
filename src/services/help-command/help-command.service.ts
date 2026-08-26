@@ -29,6 +29,7 @@ export class HelpCommandService extends BaseCommandService {
   }
 
   protected async onHelp(ctx: Context) {
+    this.log(`chatId: ${ctx.chat?.id}`);
     await ctx.replyWithHTML(this.t('HelpCommandService.helpMsg'));
   }
 }
