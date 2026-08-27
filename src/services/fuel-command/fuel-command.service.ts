@@ -1,9 +1,11 @@
 import {TFunction} from 'i18next';
 import {FetchError} from 'node-fetch';
 import {Telegraf, Context} from 'telegraf';
+import {clearInterval} from 'timers';
 import {autoInjectable, inject} from 'tsyringe';
-import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
+import {ConfigToken, FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {AppError} from '../../models/app-error.model';
+import {Config} from '../../models/config.model';
 import {ContextWithMatch} from '../../models/context-with-match.model';
 import {Fetch} from '../../models/fetch.model';
 import {FuelStation} from '../../models/fuel-station.model';
@@ -16,13 +18,16 @@ export class FuelCommandService extends BaseCommandService {
   protected defaultFuels = ['95', '98', '100'];
   protected stations?: Promise<FuelStation[]>;
   protected stationsFetchedAt = 0;
-  protected cacheTtl = 5 * 60 * 1000;
+  protected checkInterval = 5 * 60 * 1000;
+  protected knownStationIds?: Set<string>;
+  protected checkTimer!: NodeJS.Timer;
 
   constructor(
     protected logger: LoggerService,
     @inject(TFunctionToken) protected t: TFunction,
     protected bot: Telegraf,
     @inject(FetchToken) protected fetch: Fetch,
+    @inject(ConfigToken) protected config: Config,
   ) {
     super(logger, bot);
 
@@ -30,11 +35,39 @@ export class FuelCommandService extends BaseCommandService {
   }
 
   async start(): Promise<void> {
-    // noop
+    this.checkForNewStations().then();
+
+    this.checkTimer = setInterval(() => {
+      this.checkForNewStations().then();
+    }, this.checkInterval);
   }
 
   async stop(): Promise<void> {
-    // noop
+    clearInterval(this.checkTimer);
+  }
+
+  /**
+   * Refreshes the stations cache and, once a baseline is known, notifies configured chats about any
+   * station that wasn't present in the previous check (e.g. a station newly added on gdebenz.ru).
+   */
+  async checkForNewStations(): Promise<void> {
+    try {
+      const stations = await this.getStations(false);
+      const currentStationIds = new Set(stations.map(s => s.osmId));
+
+      const knownStationIds = this.knownStationIds;
+      if (knownStationIds) {
+        const newStations = stations.filter(s => !knownStationIds.has(s.osmId));
+
+        if (newStations.length) {
+          await this.notifyNewStations(newStations);
+        }
+      }
+
+      this.knownStationIds = currentStationIds;
+    } catch (e) {
+      // getStations() already logs the failure; nothing else to do here
+    }
   }
 
   async tellStations(ctx: Context, fuels: string[]): Promise<void> {
@@ -50,10 +83,7 @@ export class FuelCommandService extends BaseCommandService {
 
       let response = this.t(`${this.name}.resultIntro`);
       matches.forEach(station => {
-        const name = station.name || station.brand || this.t(`${this.name}.unknownStation`);
-        const key = station.addr ? 'stationInfo' : 'stationInfoNoAddr';
-
-        response += this.t(`${this.name}.${key}`, {name, addr: station.addr, fuels: station.fuels.join(', ')}) + '\n';
+        response += this.formatStationRow(station) + '\n';
       });
 
       await ctx.replyWithHTML(response.trim());
@@ -62,8 +92,32 @@ export class FuelCommandService extends BaseCommandService {
     }
   }
 
+  async notifyNewStations(stations: FuelStation[]): Promise<void> {
+    let message = this.t(`${this.name}.newStationsIntro`);
+    stations.forEach(station => {
+      message += this.formatStationRow(station) + '\n';
+    });
+    message = message.trim();
+
+    await Promise.all(
+      this.config.fuelUpdatesChats.map(chatId =>
+        this.bot.telegram.sendMessage(chatId, message, {parse_mode: 'HTML'}).catch(e => {
+          this.log(`Failed to notify chat ${chatId} about new stations: ` + (e as Error).message);
+        }),
+      ),
+    );
+  }
+
+  protected formatStationRow(station: FuelStation): string {
+    const name = station.name || station.brand || this.t(`${this.name}.unknownStation`);
+    const key = station.addr ? 'stationInfo' : 'stationInfoNoAddr';
+    const fuels = station.fuels.join(', ') || this.t(`${this.name}.noFuelInfo`);
+
+    return this.t(`${this.name}.${key}`, {name, addr: station.addr, fuels});
+  }
+
   getStations(useCache = true): Promise<FuelStation[]> {
-    if (useCache && this.stations && Date.now() - this.stationsFetchedAt < this.cacheTtl) {
+    if (useCache && this.stations && Date.now() - this.stationsFetchedAt < this.checkInterval) {
       return this.stations;
     }
 
@@ -99,6 +153,7 @@ export class FuelCommandService extends BaseCommandService {
 
         const result: FuelStation[] = data.map(
           (s: any): FuelStation => ({
+            osmId: s.osm_id,
             name: s.name || '',
             brand: s.brand || '',
             addr: s.addr || '',

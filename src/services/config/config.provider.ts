@@ -6,5 +6,10 @@ export function provideConfig(environment: 'staging' | 'production' = 'staging')
 
   return {
     botToken: String(process.env.BOT_TOKEN),
+    fuelUpdatesChats: String(process.env.FUEL_UPDATES_CHATS || '')
+      .split(',')
+      .map(chatId => chatId.trim())
+      .filter(Boolean)
+      .map(Number),
   };
 }

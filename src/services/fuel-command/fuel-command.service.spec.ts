@@ -2,13 +2,15 @@ import fs from 'fs';
 import {Response} from 'node-fetch';
 import {Telegraf} from 'telegraf';
 import {container} from 'tsyringe';
-import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
+import {ConfigToken, FetchToken, TFunctionToken} from '../../misc/injection-tokens';
 import {TelegrafContextMock, TelegrafMock} from '../../misc/telegraf-mocks';
 import {LoggerService} from '../logger/logger.service';
 import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {FuelCommandService} from './fuel-command.service';
 
 const stationsResult = fs.readFileSync(`${__dirname}/spec-stations.json`);
+const stationsWithNewResult = fs.readFileSync(`${__dirname}/spec-stations-with-new.json`);
+const stationsMissingOneResult = fs.readFileSync(`${__dirname}/spec-stations-missing-one.json`);
 
 describe('FuelCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -22,6 +24,9 @@ describe('FuelCommandService', () => {
       switch (key) {
         case 'FuelCommandService.resultIntro':
           return 'intro';
+
+        case 'FuelCommandService.newStationsIntro':
+          return 'newIntro';
 
         case 'FuelCommandService.stationInfo':
         case 'FuelCommandService.stationInfoNoAddr':
@@ -45,10 +50,13 @@ describe('FuelCommandService', () => {
 
     ctxMock = new TelegrafContextMock();
     telegrafMock = new TelegrafMock(ctxMock);
+    (telegrafMock as any).telegram = {sendMessage: jest.fn(() => Promise.resolve())};
     container.registerInstance(Telegraf, telegrafMock as any);
 
     fetchMock = jest.fn(() => Promise.resolve(new Response(stationsResult)));
     container.registerInstance(FetchToken, fetchMock as any);
+
+    container.registerInstance(ConfigToken, {fuelUpdatesChats: [207309431]} as any);
   });
 
   it('should answer on /fuel with stations having default fuel grades (95/98/100) in stock', async () => {
@@ -105,5 +113,65 @@ describe('FuelCommandService', () => {
 
     expect(fetchMock).toBeCalledTimes(1);
     expect(service).toBeTruthy();
+  });
+
+  it('should not notify on the first periodic check (establishing baseline)', async () => {
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations();
+
+    expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
+  });
+
+  it('should not notify on a fresh start(), only a later periodic check', async () => {
+    const service = container.resolve(FuelCommandService);
+
+    await service.start();
+    await new Promise(resolve => setImmediate(resolve)); // let start()'s fire-and-forget baseline check settle
+    await service.stop();
+
+    expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
+  });
+
+  it('should notify configured chats when a new station appears on a later check', async () => {
+    fetchMock
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsWithNewResult)));
+
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations();
+    await service.checkForNewStations();
+
+    expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(207309431, 'newIntroРоснефть', {
+      parse_mode: 'HTML',
+    });
+  });
+
+  it('should not notify again on a check where no new stations appeared', async () => {
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations();
+    await service.checkForNewStations();
+
+    expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
+  });
+
+  it('should notify again when a station disappears and later reappears', async () => {
+    fetchMock
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsMissingOneResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)));
+
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations(); // baseline: station present
+    await service.checkForNewStations(); // station drops out of the results
+    expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
+
+    await service.checkForNewStations(); // station is back
+    expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(207309431, 'newIntroБашнефть', {
+      parse_mode: 'HTML',
+    });
   });
 });

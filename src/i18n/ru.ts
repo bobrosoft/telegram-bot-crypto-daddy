@@ -12,9 +12,11 @@ export const translationsRU = {
 
   FuelCommandService: {
     resultIntro: 'Батя по колонкам прошёлся, вот где бензин наливают:\n\n',
+    newStationsIntro: 'О, новая колонка нарисовалась, бл*ть! Гляди:\n\n',
     stationInfo: ` • <b>{{name}}</b> ({{addr}}): {{fuels}}`,
     stationInfoNoAddr: ` • <b>{{name}}</b>: {{fuels}}`,
     unknownStation: 'Какая-то шарага',
+    noFuelInfo: 'хрен знает что там',
     noStationsFound: 'Пусто, бл*ть! Всё вылакали. Иди пешком, здоровее будешь.',
   },
 
