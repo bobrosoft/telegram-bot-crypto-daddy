@@ -1,0 +1,131 @@
+import {TFunction} from 'i18next';
+import {FetchError} from 'node-fetch';
+import {Telegraf, Context} from 'telegraf';
+import {autoInjectable, inject} from 'tsyringe';
+import {FetchToken, TFunctionToken} from '../../misc/injection-tokens';
+import {AppError} from '../../models/app-error.model';
+import {ContextWithMatch} from '../../models/context-with-match.model';
+import {Fetch} from '../../models/fetch.model';
+import {FuelStation} from '../../models/fuel-station.model';
+import {BaseCommandService} from '../base-command.service';
+import {LoggerService} from '../logger/logger.service';
+
+@autoInjectable()
+export class FuelCommandService extends BaseCommandService {
+  protected name = 'FuelCommandService';
+  protected defaultFuels = ['95', '98', '100'];
+  protected stations?: Promise<FuelStation[]>;
+  protected stationsFetchedAt = 0;
+  protected cacheTtl = 5 * 60 * 1000;
+
+  constructor(
+    protected logger: LoggerService,
+    @inject(TFunctionToken) protected t: TFunction,
+    protected bot: Telegraf,
+    @inject(FetchToken) protected fetch: Fetch,
+  ) {
+    super(logger, bot);
+
+    this.listenForCommand(['fuel', 'бензин'], this.onFuelCommand.bind(this));
+  }
+
+  async start(): Promise<void> {
+    // noop
+  }
+
+  async stop(): Promise<void> {
+    // noop
+  }
+
+  async tellStations(ctx: Context, fuels: string[]): Promise<void> {
+    try {
+      const wanted = fuels.map(f => f.toLocaleLowerCase());
+      const stations = await this.getStations();
+      const matches = stations.filter(s => s.fuels.some(f => wanted.includes(f.toLocaleLowerCase())));
+
+      if (!matches.length) {
+        await ctx.replyWithHTML(this.t(`${this.name}.noStationsFound`));
+        return;
+      }
+
+      let response = this.t(`${this.name}.resultIntro`);
+      matches.forEach(station => {
+        const name = station.name || station.brand || this.t(`${this.name}.unknownStation`);
+        const key = station.addr ? 'stationInfo' : 'stationInfoNoAddr';
+
+        response += this.t(`${this.name}.${key}`, {name, addr: station.addr, fuels: station.fuels.join(', ')}) + '\n';
+      });
+
+      await ctx.replyWithHTML(response.trim());
+    } catch (e) {
+      await ctx.replyWithHTML(this.t('common.executionError'));
+    }
+  }
+
+  getStations(useCache = true): Promise<FuelStation[]> {
+    if (useCache && this.stations && Date.now() - this.stationsFetchedAt < this.cacheTtl) {
+      return this.stations;
+    }
+
+    this.stationsFetchedAt = Date.now();
+    this.stations = new Promise(async (resolve, reject) => {
+      try {
+        this.log('Getting fuel stations info from gdebenz.ru...');
+
+        const url = `https://gdebenz.ru/api/stations?lat1=58.10&lon1=52.50&lat2=58.20&lon2=52.80&_=${Date.now()}`;
+        const data: any = await this.fetch(url, {
+          timeout: 30000,
+          headers: {
+            accept: '*/*',
+            'accept-language': 'en,ru;q=0.9',
+            'cache-control': 'no-cache',
+            pragma: 'no-cache',
+            priority: 'u=1, i',
+            referer: 'https://gdebenz.ru/',
+            'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"macOS"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+          },
+        }).then(r => r.json());
+
+        if (!Array.isArray(data)) {
+          throw new AppError('GDEBENZ_FETCH_FAILURE', 'Failed to fetch gdebenz.ru stations list');
+        }
+
+        const result: FuelStation[] = data.map(
+          (s: any): FuelStation => ({
+            name: s.name || '',
+            brand: s.brand || '',
+            addr: s.addr || '',
+            fuels: String(s.fuels_now || '')
+              .split(',')
+              .map(f => f.trim())
+              .filter(Boolean),
+          }),
+        );
+
+        this.log('Success');
+        resolve(result);
+      } catch (e) {
+        this.log(`Error: status ${(e as FetchError).code}. ` + (e as FetchError).message);
+
+        this.stations = undefined;
+        reject(e);
+      }
+    });
+
+    return this.stations;
+  }
+
+  protected async onFuelCommand(ctx: ContextWithMatch) {
+    const params = ctx.match?.groups?.params;
+    const fuels = params ? params.split(/[\s,]+/).filter(Boolean) : this.defaultFuels;
+
+    await this.tellStations(ctx, fuels);
+  }
+}

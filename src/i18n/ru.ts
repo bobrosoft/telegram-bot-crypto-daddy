@@ -10,6 +10,14 @@ export const translationsRU = {
     rateInfoRow: ` • {{title}}: <b>{{price}} ₽</b>`,
   },
 
+  FuelCommandService: {
+    resultIntro: 'Батя по колонкам прошёлся, вот где бензин наливают:\n\n',
+    stationInfo: ` • <b>{{name}}</b> ({{addr}}): {{fuels}}`,
+    stationInfoNoAddr: ` • <b>{{name}}</b>: {{fuels}}`,
+    unknownStation: 'Какая-то шарага',
+    noStationsFound: 'Пусто, бл*ть! Всё вылакали. Иди пешком, здоровее будешь.',
+  },
+
   HashrateCommandService: {
     help: 'А название карты указать? Или мне всё за тебя додумывать как обычно?..',
     resultIntro: 'Вот смотри, что папка в газетке нашел:\n\n',
@@ -31,6 +39,7 @@ export const translationsRU = {
 <b>/hashrate 1660ti</b> (/hash /хеш) — показывает хешрейт, настройки и информацию по карте. Жми Tab (или долгое нажатие на телефоне) чтобы дописать в команду название карты;
 <b>/rate</b> (/курс) — курс валют;
 <b>/bestchange</b> — курс ETH на обменниках;
+<b>/fuel</b> (/бензин) — где сейчас есть бензин на заправках;
 
 А то ты думал, не пальцем деланный!
     `,
