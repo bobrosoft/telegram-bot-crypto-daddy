@@ -9,6 +9,7 @@
     "test": "jest",
     "test:watch": "npm run test -- --watch",
     "lint": "eslint src/**/*.ts",
+    "lintfix": "eslint src/**/*.ts --fix",
     "server:staging": "npm run build && node dist/index.js",
     "server:production": "export ENVIRONMENT=production && npm run build && node dist/index.js"
   },

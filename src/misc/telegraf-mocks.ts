@@ -4,6 +4,7 @@ import {ContextWithMatch} from '../models/context-with-match.model';
 export class TelegrafContextMock {
   match?: {groups?: {command?: string; params?: string}};
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async replyWithHTML(html: string) {
     // noop
   }
@@ -15,7 +16,10 @@ export class TelegrafMock {
 
   constructor(protected ctxMock: TelegrafContextMock) {}
 
-  start(callback: (ctx: Context) => Promise<void>) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  start(callback: (ctx: Context) => Promise<void>) {
+    //
+  }
 
   command(command: string, callback: (ctx: Context) => Promise<void>) {
     this.commandListeners.push({command, callback});
