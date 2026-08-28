@@ -19,7 +19,7 @@ export class FuelCommandService extends BaseCommandService {
   protected stations?: Promise<FuelStation[]>;
   protected stationsFetchedAt = 0;
   protected checkInterval = 5 * 60 * 1000;
-  protected knownStationIds?: Set<string>;
+  protected stationsWithFuelIds?: Set<string>;
   protected checkTimer!: NodeJS.Timer;
 
   constructor(
@@ -48,24 +48,30 @@ export class FuelCommandService extends BaseCommandService {
   }
 
   /**
-   * Refreshes the stations cache and, once a baseline is known, notifies configured chats about any
-   * station that wasn't present in the previous check (e.g. a station newly added on gdebenz.ru).
+   * Refreshes the stations cache and, once a baseline is known, notifies configured chats about every
+   * station that now has one of the `defaultFuels` grades but didn't have it on the previous check.
+   *
+   * Note the diff is on which stations *have fuel*, not on which stations exist: the remote always
+   * returns every station within the bounding box, only their `fuels_now` changes over time.
    */
   async checkForNewStations(): Promise<void> {
     try {
       const stations = await this.getStations(false);
-      const currentStationIds = new Set(stations.map(s => s.osmId));
+      const stationsWithFuel = this.filterByFuels(stations, this.defaultFuels);
+      const currentIds = new Set(stationsWithFuel.map(s => s.osmId));
 
-      const knownStationIds = this.knownStationIds;
-      if (knownStationIds) {
-        const newStations = stations.filter(s => !knownStationIds.has(s.osmId));
+      this.log(`Checked ${stations.length} stations, ${stationsWithFuel.length} of them with fuel`);
+
+      const knownIds = this.stationsWithFuelIds;
+      if (knownIds) {
+        const newStations = stationsWithFuel.filter(s => !knownIds.has(s.osmId));
 
         if (newStations.length) {
-          await this.notifyNewStations(newStations);
+          await this.notifyNewStationsWithFuel(newStations);
         }
       }
 
-      this.knownStationIds = currentStationIds;
+      this.stationsWithFuelIds = currentIds;
     } catch (e) {
       // getStations() already logs the failure; nothing else to do here
     }
@@ -73,9 +79,8 @@ export class FuelCommandService extends BaseCommandService {
 
   async tellStations(ctx: Context, fuels: string[]): Promise<void> {
     try {
-      const wanted = fuels.map(f => f.toLocaleLowerCase());
       const stations = await this.getStations();
-      const matches = stations.filter(s => s.fuels.some(f => wanted.includes(f.toLocaleLowerCase())));
+      const matches = this.filterByFuels(stations, fuels);
 
       if (!matches.length) {
         await ctx.replyWithHTML(this.t(`${this.name}.noStationsFound`));
@@ -93,7 +98,7 @@ export class FuelCommandService extends BaseCommandService {
     }
   }
 
-  async notifyNewStations(stations: FuelStation[]): Promise<void> {
+  async notifyNewStationsWithFuel(stations: FuelStation[]): Promise<void> {
     this.log('Notifying about new stations...' + JSON.stringify(stations));
     let message = this.t(`${this.name}.newStationsIntro`);
     stations.forEach(station => {
@@ -109,6 +114,12 @@ export class FuelCommandService extends BaseCommandService {
         }),
       ),
     );
+  }
+
+  protected filterByFuels(stations: FuelStation[], fuels: string[]): FuelStation[] {
+    const wanted = fuels.map(f => f.toLocaleLowerCase());
+
+    return stations.filter(s => s.fuels.some(f => wanted.includes(f.toLocaleLowerCase())));
   }
 
   protected formatStationRow(station: FuelStation): string {

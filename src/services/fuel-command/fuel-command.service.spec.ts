@@ -9,8 +9,9 @@ import {LoggerServiceMock} from '../logger/logger.service.mock';
 import {FuelCommandService} from './fuel-command.service';
 
 const stationsResult = fs.readFileSync(`${__dirname}/spec-stations.json`);
-const stationsWithNewResult = fs.readFileSync(`${__dirname}/spec-stations-with-new.json`);
-const stationsMissingOneResult = fs.readFileSync(`${__dirname}/spec-stations-missing-one.json`);
+const stationsFuelAppearedResult = fs.readFileSync(`${__dirname}/spec-stations-fuel-appeared.json`);
+const stationsFuelGoneResult = fs.readFileSync(`${__dirname}/spec-stations-fuel-gone.json`);
+const stationsUnwantedFuelResult = fs.readFileSync(`${__dirname}/spec-stations-unwanted-fuel.json`);
 
 describe('FuelCommandService', () => {
   let ctxMock: TelegrafContextMock;
@@ -56,7 +57,7 @@ describe('FuelCommandService', () => {
     fetchMock = jest.fn(() => Promise.resolve(new Response(stationsResult)));
     container.registerInstance(FetchToken, fetchMock as any);
 
-    container.registerInstance(ConfigToken, {fuelUpdatesChats: [207309431]} as any);
+    container.registerInstance(ConfigToken, {fuelUpdatesChats: [207309431, -812467352, 639772516]} as any);
   });
 
   it('should answer on /fuel with stations having default fuel grades (95/98/100) in stock', async () => {
@@ -133,22 +134,40 @@ describe('FuelCommandService', () => {
     expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
   });
 
-  it('should notify configured chats when a new station appears on a later check', async () => {
+  it('should notify configured chats when a station gets the wanted fuel on a later check', async () => {
     fetchMock
       .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
-      .mockImplementationOnce(() => Promise.resolve(new Response(stationsWithNewResult)));
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsFuelAppearedResult)));
+
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations(); // baseline: only Башнефть has 95
+    await service.checkForNewStations(); // Лукойл got 95 too
+
+    expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(207309431, 'newIntroЛукойл', {
+      parse_mode: 'HTML',
+    });
+  });
+
+  it('should notify every configured chat', async () => {
+    fetchMock
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsFuelAppearedResult)));
 
     const service = container.resolve(FuelCommandService);
 
     await service.checkForNewStations();
     await service.checkForNewStations();
 
-    expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(207309431, 'newIntroРоснефть', {
-      parse_mode: 'HTML',
+    expect((telegrafMock as any).telegram.sendMessage).toBeCalledTimes(3);
+    [207309431, -812467352, 639772516].forEach(chatId => {
+      expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(chatId, 'newIntroЛукойл', {
+        parse_mode: 'HTML',
+      });
     });
   });
 
-  it('should not notify again on a check where no new stations appeared', async () => {
+  it('should not notify about a station that already had the fuel on the previous check', async () => {
     const service = container.resolve(FuelCommandService);
 
     await service.checkForNewStations();
@@ -157,21 +176,34 @@ describe('FuelCommandService', () => {
     expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
   });
 
-  it('should notify again when a station disappears and later reappears', async () => {
+  it('should notify again when the fuel runs out and is later delivered again', async () => {
     fetchMock
       .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
-      .mockImplementationOnce(() => Promise.resolve(new Response(stationsMissingOneResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsFuelGoneResult)))
       .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)));
 
     const service = container.resolve(FuelCommandService);
 
-    await service.checkForNewStations(); // baseline: station present
-    await service.checkForNewStations(); // station drops out of the results
+    await service.checkForNewStations(); // baseline: Башнефть has 95
+    await service.checkForNewStations(); // Башнефть drained down to 92 only
     expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
 
-    await service.checkForNewStations(); // station is back
+    await service.checkForNewStations(); // 95 is back
     expect((telegrafMock as any).telegram.sendMessage).toBeCalledWith(207309431, 'newIntroБашнефть', {
       parse_mode: 'HTML',
     });
+  });
+
+  it('should not notify when a station only gains a fuel grade nobody asked for', async () => {
+    fetchMock
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsResult)))
+      .mockImplementationOnce(() => Promise.resolve(new Response(stationsUnwantedFuelResult)));
+
+    const service = container.resolve(FuelCommandService);
+
+    await service.checkForNewStations();
+    await service.checkForNewStations();
+
+    expect((telegrafMock as any).telegram.sendMessage).not.toBeCalled();
   });
 });
