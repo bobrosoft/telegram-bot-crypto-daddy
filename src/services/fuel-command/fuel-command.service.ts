@@ -125,9 +125,9 @@ export class FuelCommandService extends BaseCommandService {
   protected formatStationRow(station: FuelStation): string {
     const name = station.name || station.brand || this.t(`${this.name}.unknownStation`);
     const key = station.addr ? 'stationInfo' : 'stationInfoNoAddr';
-    const fuels = station.fuels.join(', ') || this.t(`${this.name}.noFuelInfo`);
+    const detail = station.detail || station.fuels || this.t(`${this.name}.noFuelInfo`);
 
-    return this.t(`${this.name}.${key}`, {name, addr: station.addr, fuels});
+    return this.t(`${this.name}.${key}`, {name, addr: station.addr, details: detail});
   }
 
   getStations(useCache = true): Promise<FuelStation[]> {
@@ -140,32 +140,24 @@ export class FuelCommandService extends BaseCommandService {
       try {
         this.log('Getting fuel stations info from gdebenz.ru...');
 
-        const url = `https://gdebenz.ru/api/stations?lat1=58.10&lon1=52.50&lat2=58.20&lon2=52.80&_=${Date.now()}`;
+        const url = `https://gdebenz.ru/api/nearby?lat=58.15&lon=52.65&radius_km=20&_=${Date.now()}`;
         const data: any = await this.fetch(url, {
           timeout: 30000,
           headers: {
-            accept: '*/*',
-            'accept-language': 'en,ru;q=0.9',
-            'cache-control': 'no-cache',
-            pragma: 'no-cache',
-            priority: 'u=1, i',
-            referer: 'https://gdebenz.ru/',
-            'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
-            'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
+            referer: 'https://gdebenz.ru/',
             'user-agent':
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+            'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
+            'sec-ch-ua-mobile': '?0',
           },
         }).then(r => r.json());
 
-        if (!Array.isArray(data)) {
+        if (!data || !Array.isArray(data.stations)) {
           throw new AppError('GDEBENZ_FETCH_FAILURE', 'Failed to fetch gdebenz.ru stations list');
         }
 
-        const result: FuelStation[] = data.map(
+        const result: FuelStation[] = data.stations.map(
           (s: any): FuelStation => ({
             osmId: s.osm_id,
             name: s.name || '',
@@ -175,6 +167,7 @@ export class FuelCommandService extends BaseCommandService {
               .split(',')
               .map(f => f.trim())
               .filter(Boolean),
+            detail: s.detail || '',
           }),
         );
 

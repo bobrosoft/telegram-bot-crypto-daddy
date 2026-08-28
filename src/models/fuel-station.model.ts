@@ -4,4 +4,5 @@ export interface FuelStation {
   brand: string;
   addr: string;
   fuels: string[];
+  detail: string;
 }
