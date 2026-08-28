@@ -30,6 +30,7 @@ export class FuelCommandService extends BaseCommandService {
     @inject(ConfigToken) protected config: Config,
   ) {
     super(logger, bot);
+    this.log('fuelUpdatesChats', this.config.fuelUpdatesChats);
 
     this.listenForCommand(['fuel', 'бензин'], this.onFuelCommand.bind(this));
   }
@@ -93,12 +94,14 @@ export class FuelCommandService extends BaseCommandService {
   }
 
   async notifyNewStations(stations: FuelStation[]): Promise<void> {
+    this.log('Notifying about new stations...' + JSON.stringify(stations));
     let message = this.t(`${this.name}.newStationsIntro`);
     stations.forEach(station => {
       message += this.formatStationRow(station) + '\n';
     });
     message = message.trim();
 
+    this.log('fuelUpdatesChats', this.config.fuelUpdatesChats, 'message', message);
     await Promise.all(
       this.config.fuelUpdatesChats.map(chatId =>
         this.bot.telegram.sendMessage(chatId, message, {parse_mode: 'HTML'}).catch(e => {

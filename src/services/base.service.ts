@@ -8,7 +8,7 @@ export abstract class BaseService {
   abstract start(): Promise<void>;
   abstract stop(): Promise<void>;
 
-  protected log(message: string) {
-    this.logger.log(this.name, message);
+  protected log(...data: any[]) {
+    this.logger.log(this.name, ...data);
   }
 }
