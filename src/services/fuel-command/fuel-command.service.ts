@@ -127,7 +127,7 @@ export class FuelCommandService extends BaseCommandService {
     const key = station.addr ? 'stationInfo' : 'stationInfoNoAddr';
     const detail = station.detail || station.fuels || this.t(`${this.name}.noFuelInfo`);
 
-    return this.t(`${this.name}.${key}`, {name, addr: station.addr, details: detail});
+    return this.t(`${this.name}.${key}`, {name, addr: station.addr, detail});
   }
 
   getStations(useCache = true): Promise<FuelStation[]> {
