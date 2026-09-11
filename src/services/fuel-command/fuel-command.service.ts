@@ -11,6 +11,7 @@ import {Fetch} from '../../models/fetch.model';
 import {FuelStation} from '../../models/fuel-station.model';
 import {BaseCommandService} from '../base-command.service';
 import {LoggerService} from '../logger/logger.service';
+import {excludedStationOsmIds} from './excluded-stations';
 
 @autoInjectable()
 export class FuelCommandService extends BaseCommandService {
@@ -157,19 +158,21 @@ export class FuelCommandService extends BaseCommandService {
           throw new AppError('GDEBENZ_FETCH_FAILURE', 'Failed to fetch gdebenz.ru stations list');
         }
 
-        const result: FuelStation[] = data.stations.map(
-          (s: any): FuelStation => ({
-            osmId: s.osm_id,
-            name: s.name || '',
-            brand: s.brand || '',
-            addr: s.addr || '',
-            fuels: String(s.fuels_now || '')
-              .split(',')
-              .map(f => f.trim())
-              .filter(Boolean),
-            detail: s.detail || '',
-          }),
-        );
+        const result: FuelStation[] = data.stations
+          .filter((s: any) => !excludedStationOsmIds.includes(s.osm_id))
+          .map(
+            (s: any): FuelStation => ({
+              osmId: s.osm_id,
+              name: s.name || '',
+              brand: s.brand || '',
+              addr: s.addr || '',
+              fuels: String(s.fuels_now || '')
+                .split(',')
+                .map(f => f.trim())
+                .filter(Boolean),
+              detail: s.detail || '',
+            }),
+          );
 
         this.log('Success');
         resolve(result);
