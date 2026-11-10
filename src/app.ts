@@ -57,7 +57,7 @@ export class App {
     this.services.push(container.resolve(HashrateCommandService));
     this.services.push(container.resolve(RateCommandService));
     this.services.push(container.resolve(BestchangeCommandService));
-    this.services.push(container.resolve(FuelCommandService));
+    // this.services.push(container.resolve(FuelCommandService));
   }
 
   async start(): Promise<void> {
